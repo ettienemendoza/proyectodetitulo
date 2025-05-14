@@ -10,7 +10,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Conectar a MongoDB
-mongoose.connect('mongodb://localhost:27017/miBaseDeDatos', {
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
