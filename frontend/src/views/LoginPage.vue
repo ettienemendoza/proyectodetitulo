@@ -39,9 +39,9 @@ export default {
 
       try {
         const response = await axios.post('https://proyectodetitulo.onrender.com/api/login', {
-          nombre: this.usuario, // ¡CORREGIDO!
-          contrasena: this.contrasena
-        });
+        usuario: this.usuario, // Cambiado a 'usuario'
+        contrasena: this.contrasena
+      });
 
         console.log('Respuesta del servidor:', response.data);
 

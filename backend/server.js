@@ -135,20 +135,31 @@ app.get('/api/incidencias', authenticateJWT, async (req, res) => {
   }
 });
 
-//PRUEBA DE BCRYPT
-app.get('/api/test-bcrypt/:password', async (req, res) => {
-  const { password } = req.params;
-  const storedHashedPassword = "$2b$10$tp.fPdyRNNsucS8eeN8WR05.dbzppPmQYN0X9aXM.9E5dJARSvk3m";  // Inserta aquí la contraseña encriptada que copiaste de MongoDB Compass
+//ruta para cambiar contraseña
+const bcrypt = require('bcrypt');
 
+// ...
+
+app.get('/api/encrypt/:password', async (req, res) => {
+  const { password } = req.params;
   try {
-    const match = await bcrypt.compare(password, storedHashedPassword);
-    res.json({ match });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    res.json({ hashedPassword });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
+// ...
+  
        
+
+
+
+
+
+
 
 // Iniciar el servidor
 app.listen(3000, () => {
