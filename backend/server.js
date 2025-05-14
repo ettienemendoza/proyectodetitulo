@@ -64,24 +64,35 @@ app.get('/api/incidencias', authenticateJWT, async (req, res) => {
 app.post('/api/login', async (req, res) => {
   const { usuario, contrasena } = req.body;
 
+  console.log('Datos recibidos del frontend:', { usuario, contrasena }); // AGREGAR ESTE LOG
+
   try {
     const user = await Usuario.findOne({ nombre: usuario });
-    if (!user) return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+
+    console.log('Usuario encontrado en la base de datos:', user); // AGREGAR ESTE LOG
+
+    if (!user) {
+      return res.status(401).json({ message: 'Usuario no encontrado' }); // Mensaje más específico
+    }
 
     const validPassword = await bcrypt.compare(contrasena, user.contrasena);
+
+    console.log('Resultado de la comparación de contraseñas:', validPassword); // AGREGAR ESTE LOG
+
     if (validPassword) {
       const token = jwt.sign({ _id: user._id, nombre: user.nombre, rol: user.cargo }, 'tu_clave_secreta', { expiresIn: '1h' });
 
-      // Asegúrate de que el rol sea enviado en la respuesta junto con el token
+
       res.status(200).json({ message: 'Login exitoso', token, rol: user.cargo });
     } else {
-      res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+      res.status(401).json({ message: 'Contraseña incorrecta' }); // Mensaje más específico
     }
   } catch (error) {
     console.error('Error al iniciar sesión:', error.message);
     res.status(500).json({ message: 'Error al iniciar sesión', error: error.message });
   }
 });
+
 
 // Definir el esquema para las incidencias
 const IncidenceSchema = new mongoose.Schema({
