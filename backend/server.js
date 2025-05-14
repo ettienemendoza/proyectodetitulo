@@ -148,21 +148,7 @@ app.get('/api/test-bcrypt/:password', async (req, res) => {
   }
 });
 
-        app.post('/api/update-password/:username', async (req, res) => {
-          const { username } = req.params;
-          const { newPassword } = req.body;
-
-          try {
-            const hashedPassword = await bcrypt.hash(newPassword, 10);
-            await Usuario.findOneAndUpdate({ nombre: username }, { contrasena: hashedPassword });
-            res.json({ message: 'Contraseña actualizada exitosamente' });
-          } catch (error) {
-            res.status(500).json({ error: error.message });
-          }
-        });
-
-
-
+       
 
 // Iniciar el servidor
 app.listen(3000, () => {
