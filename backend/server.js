@@ -164,7 +164,16 @@ app.get('/api/encrypt/:password', async (req, res) => {
        
 
 
-
+// Ruta para obtener todos los usuarios (solo para depuración, ¡protégela en producción!)
+app.get('/api/usuarios', async (req, res) => {
+  try {
+    const usuarios = await Usuario.find();
+    res.status(200).json(usuarios);
+  } catch (error) {
+    console.error('Error al obtener los usuarios:', error.message);
+    res.status(500).json({ message: 'Error al obtener los usuarios', error: error.message });
+  }
+});
 
 
 
