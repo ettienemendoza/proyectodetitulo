@@ -135,10 +135,7 @@ app.get('/api/incidencias', authenticateJWT, async (req, res) => {
   }
 });
 
-//ruta para cambiar contraseña
-const bcrypt = require('bcrypt');
-
-// ...
+//ruta para cambiar contrase// ...
 
 app.get('/api/encrypt/:password', async (req, res) => {
   const { password } = req.params;
