@@ -39,26 +39,23 @@ export default {
 
       try {
         const response = await axios.post('https://proyectodetitulo.onrender.com/api/login', {
-          usuario: this.usuario,  // El backend espera "nombre", no "usuario"
+          nombre: this.usuario, // ¡CORREGIDO!
           contrasena: this.contrasena
         });
 
-        console.log('Respuesta del servidor:', response.data); // Verificar la respuesta del servidor
+        console.log('Respuesta del servidor:', response.data);
 
         if (response.data.token) {
-          console.log('Token recibido:', response.data.token);  // Verificar que se recibió el token
+          console.log('Token recibido:', response.data.token);
 
-          // Guardar el token y el rol en localStorage
           localStorage.setItem('token', response.data.token);
           localStorage.setItem('rol', response.data.rol);
-          localStorage.setItem('usuario', JSON.stringify({ nombre: this.usuario }));  // Guardar el nombre del usuario
+          localStorage.setItem('usuario', JSON.stringify({ nombre: this.usuario }));
 
-          // Verificar en la consola si el token y rol están en localStorage
           console.log('Token en localStorage:', localStorage.getItem('token'));
           console.log('Rol en localStorage:', localStorage.getItem('rol'));
 
-          // Verificar el rol antes de redirigir
-          console.log('Rol del usuario:', response.data.rol);  // Verificar el rol
+          console.log('Rol del usuario:', response.data.rol);
 
           setTimeout(() => {
             if (response.data.rol === 'supervisor') {
@@ -68,7 +65,7 @@ export default {
               console.log('Redirigiendo a dashboard-ejecutivo');
               this.$router.push('/dashboard-ejecutivo');
             }
-          }, 500); // Retraso de 500ms
+          }, 500);
         }
       } catch (error) {
         console.error('Error al iniciar sesión:', error);
