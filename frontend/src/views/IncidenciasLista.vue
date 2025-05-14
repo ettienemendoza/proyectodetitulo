@@ -67,7 +67,7 @@ export default {
       };
 
       // Realizar la solicitud GET para obtener las incidencias
-      axios.get('http://localhost:3000/api/incidencias', config)  // Enviar la solicitud con los headers
+      axios.get('https://proyectodetitulo.onrender.com/api/incidencias', config)  // Enviar la solicitud con los headers
         .then(response => {
           this.incidencias = response.data;  // Guardar las incidencias en la variable
         })

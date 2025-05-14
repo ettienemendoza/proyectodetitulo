@@ -116,7 +116,7 @@ export default {
       };
 
       // Enviar la incidencia al backend
-      axios.post('http://localhost:3000/api/incidencias', this.incidencia, config)
+      axios.post('https://proyectodetitulo.onrender.com/api/incidencias', this.incidencia, config)
         .then(response => {
           console.log('Incidencia registrada:', response);
           this.navegarAIncidencias();

@@ -38,7 +38,7 @@ export default {
       });
 
       try {
-        const response = await axios.post('http://localhost:3000/api/login', {
+        const response = await axios.post('https://proyectodetitulo.onrender.com/api/login', {
           usuario: this.usuario,  // El backend espera "nombre", no "usuario"
           contrasena: this.contrasena
         });

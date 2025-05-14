@@ -70,7 +70,7 @@ export default {
     // Agregar un nuevo usuario
     async agregarUsuario() {
       try {
-        const response = await axios.post('http://localhost:3000/api/usuarios', this.nuevoUsuario);
+        const response = await axios.post('https://proyectodetitulo.onrender.com/api/usuarios', this.nuevoUsuario);
         console.log(response.data);
         alert('Usuario creado exitosamente');
         this.obtenerUsuarios();  // Actualizar la lista de usuarios
