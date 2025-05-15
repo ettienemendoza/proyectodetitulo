@@ -15,7 +15,8 @@
               <th>Fecha</th>
               <th>Hora</th>
               <th>Comentarios</th>
-              <th>Acciones</th> </tr>
+              <th>Acciones</th>
+            </tr>
           </thead>
           <tbody>
             <tr v-for="incidencia in incidencias" :key="incidencia._id">
@@ -102,7 +103,7 @@ export default {
           await axios.delete(`https://proyectodetitulo.onrender.com/api/incidencias/${id}`, config);
           console.log('Incidencia eliminada');
           alert('Incidencia eliminada exitosamente');
-           this.obtenerIncidencias();
+          this.obtenerIncidencias();
         } catch (error) {
           console.error('Error al eliminar la incidencia:', error);
           alert('Error al eliminar la incidencia');
