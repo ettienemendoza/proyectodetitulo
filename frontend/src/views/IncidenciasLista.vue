@@ -49,33 +49,37 @@ export default {
     this.obtenerIncidencias();
   },
   methods: {
-    obtenerIncidencias() {
-      const token = localStorage.getItem('token');  // Obtener el token desde localStorage
+   obtenerIncidencias() {
+  const token = localStorage.getItem('token');  // Obtener el token desde localStorage
 
-      // Asegúrate de que el token esté disponible
-      if (!token) {
-        console.error('Token no proporcionado');
-        alert("Por favor inicie sesión");
-        return;
-      }
+  // Verificar que el token esté disponible
+  if (!token) {
+    console.error('Token no proporcionado');
+    alert("Por favor inicie sesión");
+    return;
+  }
 
-      // Configurar los encabezados con el token
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,  // Añadir el token al header
-        },
-      };
+  console.log('Token al obtener incidencias:', token); // AGREGAR ESTE LOG
 
-      // Realizar la solicitud GET para obtener las incidencias
-      axios.get('https://proyectodetitulo.onrender.com/api/incidencias', config)  // Enviar la solicitud con los headers
-        .then(response => {
-          this.incidencias = response.data;  // Guardar las incidencias en la variable
-        })
-        .catch(error => {
-          console.error('Error al cargar las incidencias:', error);
-          alert('Error al cargar las incidencias');
-        });
+  // Configurar los encabezados con el token
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,  // Añadir el token al header
     },
+  };
+
+  // Realizar la solicitud GET para obtener las incidencias
+  axios.get('https://proyectodetitulo.onrender.com/api/incidencias', config)  // Enviar la solicitud con los headers
+    .then(response => {
+      this.incidencias = response.data;  // Guardar las incidencias en la variable
+    })
+    .catch(error => {
+      console.error('Error al cargar las incidencias:', error);
+      alert('Error al cargar las incidencias');
+    });
+},
+     
+      
     navegarAFormulario() {
       this.$router.push('/dashboard-ejecutivo');  // Redirige al formulario
     }
