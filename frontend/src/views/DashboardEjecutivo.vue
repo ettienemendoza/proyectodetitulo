@@ -2,6 +2,9 @@
   <div class="dashboard-container">
     <div class="sidebar">
       <button class="sidebar-button" @click="navegarAIncidencias">Lista de Incidencias</button>
+      <button class="sidebar-button logout-button" @click="cerrarSesion">
+        CERRAR SESIÓN
+        <span class="logout-icon">🚪</span> </button>
     </div>
     <div class="main-content">
       <div class="incidence-form-container">
@@ -127,6 +130,15 @@ export default {
     },
     navegarAIncidencias() {
       this.$router.push('/incidencias-lista');
+    },
+    cerrarSesion() {
+      // Eliminar el token y la información del usuario del localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('rol');
+      localStorage.removeItem('usuario');
+
+      // Redirigir al usuario a la página de inicio de sesión (asumiendo que la ruta es '/')
+      this.$router.push('/');
     }
   }
 };
@@ -142,8 +154,10 @@ export default {
   width: 200px;
   background-color: #b81e1e;
   display: flex;
-  justify-content: center;
+  flex-direction: column; /* Para alinear los botones verticalmente */
+  justify-content: flex-start; /* Alinea los elementos al inicio */
   align-items: center;
+  padding-top: 20px; /* Espacio en la parte superior */
 }
 
 .sidebar-button {
@@ -153,10 +167,26 @@ export default {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  margin-bottom: 10px; /* Espacio entre los botones */
+  width: 80%; /* Ajusta el ancho de los botones */
+  text-align: center;
 }
 
 .sidebar-button:hover {
   background-color: #e0e0e0;
+}
+
+.logout-button {
+  margin-top: auto; /* Empuja el botón hacia la parte inferior */
+  margin-bottom: 20px; /* Espacio en la parte inferior */
+  display: flex; /* Para alinear texto e icono */
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-icon {
+  margin-left: 5px; /* Espacio entre el texto y el icono */
+  font-size: 1.2em; /* Ajusta el tamaño del icono */
 }
 
 .main-content {
@@ -208,12 +238,13 @@ textarea {
 }
 
 .agregar-button {
-  background-color: #4CAF50;
+  background-color: #b81e1e;
   color: white;
-  padding: 10px 15px;
+  padding: 10px 20px;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
+  width: 100%;
 }
 
 .agregar-button:hover {
