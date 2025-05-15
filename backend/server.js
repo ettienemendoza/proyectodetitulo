@@ -36,7 +36,7 @@ UsuarioSchema.pre('save', async function (next) {
 
 // Crear el modelo de Usuario
 const Usuario = mongoose.model('Usuario', UsuarioSchema);
-  
+
 // Middleware de autenticación para verificar el JWT
 const authenticateJWT = (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -225,6 +225,49 @@ app.post('/api/usuarios', async (req, res) => {
     res.status(500).json({ message: 'Error al crear el usuario', error: error.message });
   }
 });
+
+// Ruta para obtener un usuario por ID (si es necesario)
+app.get('/api/usuarios/:id', authenticateJWT, async (req, res) => {
+  try {
+    const usuario = await Usuario.findById(req.params.id);
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    res.status(200).json(usuario);
+  } catch (error) {
+    console.error('Error al obtener el usuario:', error.message);
+    res.status(500).json({ message: 'Error al obtener el usuario', error: error.message });
+  }
+});
+
+// Ruta para actualizar un usuario
+app.put('/api/usuarios/:id', authenticateJWT, async (req, res) => {
+  try {
+    const usuario = await Usuario.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    res.status(200).json({ message: 'Usuario actualizado exitosamente', usuario });
+  } catch (error) {
+    console.error('Error al actualizar el usuario:', error.message);
+    res.status(500).json({ message: 'Error al actualizar el usuario', error: error.message });
+  }
+});
+
+// Ruta para eliminar un usuario
+app.delete('/api/usuarios/:id', authenticateJWT, async (req, res) => {
+  try {
+    const usuario = await Usuario.findByIdAndDelete(req.params.id);
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    res.status(200).json({ message: 'Usuario eliminado exitosamente' });
+  } catch (error) {
+    console.error('Error al eliminar el usuario:', error.message);
+    res.status(500).json({ message: 'Error al eliminar el usuario', error: error.message });
+  }
+});
+
 
 // Iniciar el servidor
 app.listen(3000, () => {

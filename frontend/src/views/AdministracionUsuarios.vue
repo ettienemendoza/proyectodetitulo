@@ -2,7 +2,7 @@
   <div class="admin-container">
     <h2 class="page-title">Administración</h2>
     <div class="main-content">
-      <div class="add-user-card">
+      <div class="card add-user-card">
         <h3>Añadir Usuarios</h3>
         <form @submit.prevent="agregarUsuario">
           <div class="form-group">
@@ -23,7 +23,7 @@
           <button type="submit" class="add-button">Crear</button>
         </form>
       </div>
-      <div class="user-list-card">
+      <div class="card user-list-card">
         <h3>Lista de Usuarios</h3>
         <div class="table-container">
           <table>
@@ -36,10 +36,18 @@
             </thead>
             <tbody>
               <tr v-for="usuario in usuarios" :key="usuario._id">
-                <td>{{ usuario.nombre }}</td>
-                <td>{{ usuario.cargo }}</td>
                 <td>
-                  <button @click="editarUsuario(usuario)" class="edit-button">Editar</button>
+                  <input type="text" v-model="usuario.nombre" :disabled="editingId !== usuario._id" />
+                </td>
+                <td>
+                  <select v-model="usuario.cargo" :disabled="editingId !== usuario._id">
+                    <option value="ejecutivo">Ejecutivo</option>
+                    <option value="supervisor">Supervisor</option>
+                  </select>
+                </td>
+                <td>
+                  <button v-if="editingId !== usuario._id" @click="editarUsuario(usuario._id)" class="edit-button">Editar</button>
+                  <button v-if="editingId === usuario._id" @click="guardarUsuario(usuario)" class="save-button">Guardar</button>
                   <button @click="eliminarUsuario(usuario._id)" class="delete-button">Eliminar</button>
                 </td>
               </tr>
@@ -65,7 +73,7 @@ export default {
         cargo: 'ejecutivo'
       },
       usuarios: [],
-      usuarioEditando: null,
+      editingId: null,
     };
   },
   mounted() {
@@ -107,7 +115,7 @@ export default {
       }
     },
     editarUsuario(usuario) {
-      this.usuarioEditando = { ...usuario };
+      this.editingId = usuario._id;
     },
     async guardarUsuario(usuario) {
       try {
@@ -121,7 +129,7 @@ export default {
         console.log("Usuario actualizado", response.data);
         alert("Usuario actualizado exitosamente");
         this.obtenerUsuarios();
-        this.usuarioEditando = null;
+        this.editingId = null;
       } catch (error) {
         console.error("Error al actualizar usuario", error);
         alert("Error al actualizar usuario");
@@ -139,6 +147,7 @@ export default {
   padding: 20px;
   background-color: #f2f2f2;
   min-height: 100vh;
+  font-family: Arial, sans-serif;
 }
 
 .page-title {
@@ -148,30 +157,38 @@ export default {
   margin-bottom: 20px;
   text-align: center;
   border-radius: 5px;
+  font-size: 1.8em;
 }
 
 .main-content {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  align-items: stretch;
   gap: 20px;
   margin-bottom: 20px;
 }
 
-.add-user-card,
-.user-list-card {
+.card {
   background-color: white;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   flex: 1;
+  min-width: 300px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
 .add-user-card h3,
 .user-list-card h3 {
   color: #b81e1e;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   text-align: left;
+  font-size: 1.4em;
 }
 
 .form-group {
@@ -181,9 +198,10 @@ export default {
 
 label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   color: #555;
   font-weight: bold;
+  font-size: 1em;
 }
 
 input,
@@ -192,8 +210,9 @@ select {
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   transition: border-color 0.3s ease;
+  font-size: 1em;
 }
 
 input:focus,
@@ -204,16 +223,17 @@ select:focus {
 }
 
 button {
-  padding: 10px 20px;
+  padding: 12px 25px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1em;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 1.1em;
+  transition: background-color 0.3s ease, transform 0.1s ease;
 }
 
 button:hover {
   background-color: #a31d1d;
+  transform: scale(1.05);
 }
 
 button:active {
@@ -223,7 +243,7 @@ button:active {
 .add-button {
   background-color: #b81e1e;
   color: white;
-  margin-top: 10px;
+  margin-top: 20px;
   width: 100%;
 }
 
@@ -231,7 +251,7 @@ button:active {
   background-color: #a31d1d;
 }
 
-.user-list {
+.user-list-card {
   margin-top: 0;
 }
 
@@ -241,19 +261,22 @@ table {
   margin-top: 10px;
   border-radius: 5px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  background-color: white;
 }
 
 table thead tr {
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: #b81e1e;
+  color: white;
   text-align: left;
 }
 
 table th,
 table td {
-  padding: 12px 15px;
-  border-bottom: 1px solid #eee;
+  padding: 15px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+  font-size: 1em;
 }
 
 table tbody tr:hover {
@@ -262,11 +285,12 @@ table tbody tr:hover {
 
 .edit-button,
 .delete-button {
-  padding: 8px 12px;
+  padding: 8px 15px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 0.9em;
+  transition: background-color 0.3s ease, transform 0.1s ease;
   margin: 2px;
 }
 
@@ -291,25 +315,35 @@ table tbody tr:hover {
 .back-to-menu-button {
   background-color: #b81e1e;
   color: white;
-  padding: 10px 20px;
+  padding: 12px 25px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1em;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 1.1em;
+  transition: background-color 0.3s ease, transform 0.1s ease;
   margin-top: 20px;
-  align-self: center;
-  width: 200px;
-  margin: 20px auto 0 auto;
   display: block;
   text-align: center;
+  margin: 20px auto 0 auto;
+  width: 200px;
 }
 
 .back-to-menu-button:hover {
   background-color: #a31d1d;
+  transform: scale(1.05);
 }
 
 .back-to-menu-button:active {
   transform: translateY(2px);
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .card {
+    min-width: 100%;
+  }
 }
 </style>
