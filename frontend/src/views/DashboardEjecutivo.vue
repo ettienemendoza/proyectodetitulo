@@ -156,7 +156,7 @@ export default {
   display: flex;
   flex-direction: column; /* Para alinear los botones verticalmente */
   justify-content: flex-start; /* Alinea los elementos al inicio */
-  align-items: center;
+  align-items: center; /* Centra los elementos horizontalmente */
   padding-top: 20px; /* Espacio en la parte superior */
 }
 
