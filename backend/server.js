@@ -1,9 +1,12 @@
+
+
+
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
-const jwt = require('jsonwebtoken'); // Asegúrate de que esté importado
+const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(cors());
@@ -23,7 +26,7 @@ const UsuarioSchema = new mongoose.Schema({
 });
 
 // Método para cifrar la contraseña antes de guardarla
-UsuarioSchema.pre('save', async function(next) {
+UsuarioSchema.pre('save', async function (next) {
   if (this.isModified('contrasena')) {
     const salt = await bcrypt.genSalt(10);
     this.contrasena = await bcrypt.hash(this.contrasena, salt);
@@ -33,24 +36,39 @@ UsuarioSchema.pre('save', async function(next) {
 
 // Crear el modelo de Usuario
 const Usuario = mongoose.model('Usuario', UsuarioSchema);
-
-// Middleware de autenticación para verificar el JWT
+  
 // Middleware de autenticación para verificar el JWT
 const authenticateJWT = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', ''); // Extrae el token del encabezado de autorización
+  const token = req.header('Authorization')?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ message: 'Acceso denegado, token no proporcionado' });
 
   jwt.verify(token, 'tu_clave_secreta', (err, user) => {
     if (err) return res.status(403).json({ message: 'Token no válido' });
-    req.user = user; // Guarda la información del usuario en la solicitud
-    next(); // Llama al siguiente middleware
+    req.user = user;
+    next();
   });
 };
+
+// Definir el esquema para las incidencias
+const IncidenceSchema = new mongoose.Schema({
+  type: { type: String, required: true },
+  description: { type: String, required: true },
+  executiveName: { type: String, required: true },
+  comments: {
+    type: String,
+    required: function () { return this.rol === 'supervisor'; } // Solo obligatorio para el supervisor
+  },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+
+// Crear el modelo de Incidencia
+const Incidence = mongoose.model('Incidence', IncidenceSchema);
 
 // Ruta para obtener todas las incidencias
 app.get('/api/incidencias', authenticateJWT, async (req, res) => {
   try {
-    const incidencias = await Incidence.find();  
+    const incidencias = await Incidence.find();
     res.status(200).json(incidencias);
   } catch (error) {
     console.error('Error al obtener las incidencias:', error.message);
@@ -58,34 +76,32 @@ app.get('/api/incidencias', authenticateJWT, async (req, res) => {
   }
 });
 
-
-
-// Ruta de login en el backend
+  // Ruta de login en el backend
 app.post('/api/login', async (req, res) => {
   const { usuario, contrasena } = req.body;
 
-  console.log('Datos recibidos del frontend:', { usuario, contrasena }); // AGREGAR ESTE LOG
+  console.log('Datos recibidos del frontend:', { usuario, contrasena });
 
   try {
     const user = await Usuario.findOne({ nombre: usuario });
 
-    console.log('Usuario encontrado en la base de datos:', user); // AGREGAR ESTE LOG
+    console.log('Usuario encontrado en la base de datos:', user);
 
     if (!user) {
-      return res.status(401).json({ message: 'Usuario no encontrado' }); // Mensaje más específico
+      return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
     }
 
     const validPassword = await bcrypt.compare(contrasena, user.contrasena);
 
-    console.log('Resultado de la comparación de contraseñas:', validPassword); // AGREGAR ESTE LOG
+    console.log('Resultado de la comparación de contraseñas:', validPassword);
 
     if (validPassword) {
+    
+    
       const token = jwt.sign({ _id: user._id, nombre: user.nombre, rol: user.cargo }, 'tu_clave_secreta', { expiresIn: '1h' });
-
-
       res.status(200).json({ message: 'Login exitoso', token, rol: user.cargo });
     } else {
-      res.status(401).json({ message: 'Contraseña incorrecta' }); // Mensaje más específico
+      res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
     }
   } catch (error) {
     console.error('Error al iniciar sesión:', error.message);
@@ -94,21 +110,12 @@ app.post('/api/login', async (req, res) => {
 });
 
 
-// Definir el esquema para las incidencias
-const IncidenceSchema = new mongoose.Schema({
-  type: { type: String, required: true },
-  description: { type: String, required: true },
-  executiveName: { type: String, required: true }, 
-  comments: { 
-    type: String, 
-    required: function() { return this.rol === 'supervisor'; } // Solo obligatorio para el supervisor
-  },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+// Ruta para obtener todas las incidencias (solo para supervisores)
 
-// Crear el modelo de Incidencia
-const Incidence = mongoose.model('Incidence', IncidenceSchema);
+
+
+
+// Ruta para obtener las incidencias de un ejecutivo específico
 
 // Ruta para registrar una incidencia
 app.post('/api/incidencias', authenticateJWT, async (req, res) => {
@@ -135,45 +142,7 @@ app.post('/api/incidencias', authenticateJWT, async (req, res) => {
   }
 });
 
-// Ruta para obtener todas las incidencias
-app.get('/api/incidencias', authenticateJWT, async (req, res) => {
-  try {
-    const incidencias = await Incidence.find();  
-    res.status(200).json(incidencias);
-  } catch (error) {
-    console.error('Error al obtener las incidencias:', error.message);
-    res.status(500).json({ message: 'Error al obtener las incidencias', error: error.message });
-  }
-});
-
-//ruta para cambiar contrase// ...
-
-app.get('/api/encrypt/:password', async (req, res) => {
-  const { password } = req.params;
-  try {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    res.json({ hashedPassword });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ...
-  
-       
-
-
-// Ruta para obtener todos los usuarios (solo para depuración, ¡protégela en producción!)
-app.get('/api/usuarios', async (req, res) => {
-  try {
-    const usuarios = await Usuario.find();
-    res.status(200).json(usuarios);
-  } catch (error) {
-    console.error('Error al obtener los usuarios:', error.message);
-    res.status(500).json({ message: 'Error al obtener los usuarios', error: error.message });
-  }
-});
+// Ruta para obtener las incidencias de un ejecutivo específico
 
 // Ruta para obtener una incidencia por ID
 app.get('/api/incidencias/:id', authenticateJWT, async (req, res) => {
@@ -232,6 +201,30 @@ app.put('/api/incidencias/:id', authenticateJWT, async (req, res) => {
   }
 });
 
+// Ruta para obtener todos los usuarios (solo para depuración, ¡protégela en producción!)
+app.get('/api/usuarios', async (req, res) => {
+  try {
+    const usuarios = await Usuario.find();
+    res.status(200).json(usuarios);
+  } catch (error) {
+    console.error('Error al obtener los usuarios:', error.message);
+    res.status(500).json({ message: 'Error al obtener los usuarios', error: error.message });
+  }
+});
+
+// Ruta para registrar un nuevo usuario
+app.post('/api/usuarios', async (req, res) => {
+  const { nombre, contrasena, cargo } = req.body;
+
+  try {
+    const nuevoUsuario = new Usuario({ nombre, contrasena, cargo });
+    await nuevoUsuario.save();
+    res.status(201).json({ message: 'Usuario creado exitosamente' });
+  } catch (error) {
+    console.error('Error al crear el usuario:', error.message);
+    res.status(500).json({ message: 'Error al crear el usuario', error: error.message });
+  }
+});
 
 // Iniciar el servidor
 app.listen(3000, () => {

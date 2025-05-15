@@ -1,7 +1,7 @@
 <template>
   <div class="admin-container">
     <h2>Administración de Usuarios</h2>
-    
+
     <div class="add-user">
       <h3>Agregar Usuario</h3>
       <form @submit.prevent="agregarUsuario">
@@ -22,8 +22,9 @@
         </div>
         <button type="submit">Crear Usuario</button>
       </form>
+   
     </div>
-
+   
     <div class="user-list">
       <h3>Lista de Usuarios</h3>
       <table>
@@ -173,6 +174,3 @@ button:hover {
   background-color: darkred;
 }
 </style>
-/* Este es el componente de Vue para la administración de usuarios. 
-   Permite agregar nuevos usuarios y listar los existentes. 
-   También incluye la funcionalidad para eliminar usuarios. */
