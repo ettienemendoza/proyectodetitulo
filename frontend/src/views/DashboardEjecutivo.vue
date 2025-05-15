@@ -172,6 +172,11 @@ export default {
   text-align: center;
 }
 
+.sidebar > button:first-child {
+  margin-top: 100px; /* Espacio desde la parte superior */
+  margin-bottom: 100px; /* Espacio hacia el botón de abajo */
+}
+
 .sidebar-button:hover {
   background-color: #e0e0e0;
 }
@@ -196,10 +201,10 @@ export default {
 }
 
 .incidence-form-container {
-  background-color: white;
+  background-color: rgb(11, 6, 82);
   border: 1px solid #ccc;
   border-radius: 10px;
-  padding: 200px;
+  padding: 20px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   width: 500px;
   margin: 20px auto;
