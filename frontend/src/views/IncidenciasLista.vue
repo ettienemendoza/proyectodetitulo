@@ -1,7 +1,9 @@
 <template>
   <div class="incidencias-lista-container">
     <div class="sidebar">
-      <button class="sidebar-button" @click="navegarAFormulario">Volver al Formulario</button>
+      <button class="sidebar-button" @click="navegarAFormulario">
+        {{ usuario.rol === 'supervisor' ? 'Volver al Perfil Supervisor' : 'Volver al Formulario' }}
+      </button>
     </div>
     <div class="main-content">
       <h2>Lista de Incidencias</h2>
@@ -15,22 +17,22 @@
               <th>Fecha</th>
               <th>Hora</th>
               <th>Comentarios</th>
-            </tr>
+              <th v-if="usuario.rol === 'supervisor'">Acciones</th> </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="incidencia in incidencias"
-              :key="incidencia._id"
-              @click="verDetalleIncidencia(incidencia._id)"  style="cursor: pointer;"  >
+            <tr v-for="incidencia in incidencias" :key="incidencia._id">
               <td>{{ incidencia.type }}</td>
               <td>{{ incidencia.description }}</td>
               <td>{{ incidencia.executiveName }}</td>
-              <td>{{ incidencia.createdAt }}</td>
-              <td>{{ incidencia.updatedAt }}</td>
+              <td>{{ new Date(incidencia.createdAt).toLocaleDateString() }}</td>
+              <td>{{ new Date(incidencia.updatedAt).toLocaleTimeString() }}</td>
               <td>{{ incidencia.comments }}</td>
+              <td v-if="usuario.rol === 'supervisor'">  <button @click="verDetalleIncidencia(incidencia._id)" class="edit-button">Editar</button>
+                <button @click="borrarIncidencia(incidencia._id)" class="delete-button">Borrar</button>
+              </td>
             </tr>
             <tr v-if="incidencias.length === 0">
-              <td colspan="6" class="no-data">No hay incidencias registradas.</td>
+              <td colspan="7" class="no-data">No hay incidencias registradas.</td>
             </tr>
           </tbody>
         </table>
@@ -45,35 +47,32 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      incidencias: []  // Lista de incidencias
+      incidencias: [],
+      usuario: {}, // Para almacenar la información del usuario
     };
   },
   mounted() {
     this.obtenerIncidencias();
+    this.usuario = JSON.parse(localStorage.getItem('usuario')) || {}; // Obtener el rol del usuario
   },
   methods: {
     obtenerIncidencias() {
-      const token = localStorage.getItem('token');  // Obtener el token desde localStorage
-
-      // Asegúrate de que el token esté disponible
+      const token = localStorage.getItem('token');
       if (!token) {
         console.error('Token no proporcionado');
         alert("Por favor inicie sesión");
         return;
       }
 
-      console.log('Token al obtener incidencias:', token);
-      // Configurar los encabezados con el token
       const config = {
         headers: {
-          Authorization: `Bearer ${token}`,  // Añadir el token al header
+          Authorization: `Bearer ${token}`,
         },
       };
 
-      // Realizar la solicitud GET para obtener las incidencias
-      axios.get('https://proyectodetitulo.onrender.com/api/incidencias', config)  // Enviar la solicitud con los headers
+      axios.get('https://proyectodetitulo.onrender.com/api/incidencias', config)
         .then(response => {
-          this.incidencias = response.data;  // Guardar las incidencias en la variable
+          this.incidencias = response.data;
         })
         .catch(error => {
           console.error('Error al cargar las incidencias:', error);
@@ -81,12 +80,42 @@ export default {
         });
     },
     navegarAFormulario() {
-      this.$router.push('/dashboard-ejecutivo');  // Redirige al formulario
+      if (this.usuario.rol === 'supervisor') {
+        this.$router.push('/dashboard-supervisor');
+      } else {
+        this.$router.push('/dashboard-ejecutivo');
+      }
     },
-    verDetalleIncidencia(id) {  // Nueva función para ver el detalle
-      this.$router.push(`/incidencias/${id}`); // Navega a la ruta con el ID
-    }
-  }
+    verDetalleIncidencia(id) {
+      this.$router.push(`/incidencias/${id}`);
+    },
+    async borrarIncidencia(id) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Token no proporcionado');
+        alert('Por favor, inicie sesión');
+        this.$router.push('/');
+        return;
+      }
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      if (confirm('¿Estás seguro de que deseas eliminar esta incidencia?')) {
+        try {
+          await axios.delete(`https://proyectodetitulo.onrender.com/api/incidencias/${id}`, config);
+          console.log('Incidencia eliminada');
+          alert('Incidencia eliminada exitosamente');
+          this.obtenerIncidencias(); // Recargar la lista después de eliminar
+        } catch (error) {
+          console.error('Error al eliminar la incidencia:', error);
+          alert('Error al eliminar la incidencia');
+        }
+      }
+    },
+  },
 };
 </script>
 
@@ -98,7 +127,7 @@ export default {
 
 .sidebar {
   width: 200px;
-  background-color: #b81e1e;  /* Barra roja */
+  background-color: #b81e1e;
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -160,5 +189,31 @@ h2 {
 .no-data {
   text-align: center;
   font-style: italic;
+}
+.edit-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.edit-button:hover {
+  background-color: #45a049;
+}
+
+.delete-button {
+  background-color: #b81e1e;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: #a71010;
 }
 </style>

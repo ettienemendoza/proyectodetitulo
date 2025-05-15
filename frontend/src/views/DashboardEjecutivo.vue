@@ -201,7 +201,7 @@ export default {
 }
 
 .incidence-form-container {
-  background-color: rgb(63, 74, 224);
+  background-color: rgb(183, 184, 194);
   border: 1px solid #ccc;
   border-radius: 10px;
   padding: 20px;
