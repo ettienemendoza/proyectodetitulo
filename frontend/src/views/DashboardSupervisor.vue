@@ -25,7 +25,7 @@ export default {
   methods: {
     // Redirige a la vista de gráfico de estadísticas
     irAGrafico() {
-      this.$router.push('/grafico-estadisticas');
+      this.$router.push('/graficos-supervisor');
     },
 
     // Redirige a la vista de lista de incidencias
