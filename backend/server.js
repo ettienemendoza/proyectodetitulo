@@ -175,7 +175,62 @@ app.get('/api/usuarios', async (req, res) => {
   }
 });
 
+// Ruta para obtener una incidencia por ID
+app.get('/api/incidencias/:id', authenticateJWT, async (req, res) => {
+  try {
+    const incidencia = await Incidence.findById(req.params.id);
+    if (!incidencia) {
+      return res.status(404).json({ message: 'Incidencia no encontrada' });
+    }
+    res.status(200).json(incidencia);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener la incidencia', error: error.message });
+  }
+});
 
+// Ruta para actualizar una incidencia
+app.put('/api/incidencias/:id', authenticateJWT, async (req, res) => {
+  try {
+    const incidencia = await Incidence.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!incidencia) {
+      return res.status(404).json({ message: 'Incidencia no encontrada' });
+    }
+    res.status(200).json({ message: 'Incidencia actualizada exitosamente', incidencia });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al actualizar la incidencia', error: error.message });
+  }
+});
+
+// Ruta para eliminar una incidencia
+app.delete('/api/incidencias/:id', authenticateJWT, async (req, res) => {
+  try {
+    const incidencia = await Incidence.findByIdAndDelete(req.params.id);
+    if (!incidencia) {
+      return res.status(404).json({ message: 'Incidencia no encontrada' });
+    }
+    res.status(200).json({ message: 'Incidencia eliminada exitosamente' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al eliminar la incidencia', error: error.message });
+  }
+});
+
+// Ruta para agregar/actualizar comentarios
+app.put('/api/incidencias/:id', authenticateJWT, async (req, res) => {
+  try {
+    const incidencia = await Incidence.findByIdAndUpdate(
+      req.params.id,
+      { comments: req.body.comments }, // Actualiza solo el campo de comentarios
+      { new: true }
+    );
+    if (!incidencia) {
+      return res.status(404).json({ message: 'Incidencia no encontrada' });
+    }
+    res.status(200).json({ message: 'Comentario agregado/actualizado', incidencia });
+  } catch (error) {
+    console.error("Error al agregar/actualizar comentario:", error);
+    res.status(500).json({ message: 'Error al agregar/actualizar comentario', error: error.message });
+  }
+});
 
 
 // Iniciar el servidor
