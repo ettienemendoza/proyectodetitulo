@@ -6,6 +6,7 @@ import IncidenciaSupervisor from '../views/IncidenciaSupervisor.vue';
 import IncidenciasLista from '../views/IncidenciasLista.vue';
 import AdministracionUsuarios from '../views/AdministracionUsuarios.vue';
 import ListaSupervisor from '../views/ListaSupervisor.vue';
+import GraficosSupervisor from '@/views/GraficosSupervisor.vue';
 
 const routes = [
   { path: '/', component: LoginPage },
@@ -15,6 +16,7 @@ const routes = [
   { path: '/incidencias-lista', component: IncidenciasLista }, // Ruta para la lista de incidencias (ejecutivo y supervisor)
   { path: '/administracion', component: AdministracionUsuarios },
   { path: '/lista-supervisor', component: ListaSupervisor },
+  {path: '/graficos-supervisor', component: GraficosSupervisor},
 ];
 
 const router = createRouter({
