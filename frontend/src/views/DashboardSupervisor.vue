@@ -5,17 +5,14 @@
       <h3>¿Qué deseas hacer?</h3>
     </div>
     <div class="supervisor-options">
-      <!-- Opción para redirigir al gráfico de estadísticas -->
       <div class="option-card" @click="irAGrafico">
         <h3>Gráfico de Estadísticas</h3>
       </div>
 
-      <!-- Opción para redirigir a la lista de incidencias -->
       <div class="option-card" @click="irAListaIncidencias">
         <h3>Lista de Incidencias</h3>
       </div>
 
-      <!-- Opción para redirigir a la administración de usuarios -->
       <div class="option-card" @click="irAAdministracion">
         <h3>Administración</h3>
       </div>
@@ -33,7 +30,7 @@ export default {
 
     // Redirige a la vista de lista de incidencias
     irAListaIncidencias() {
-      this.$router.push('/incidencias-lista');
+      this.$router.push('/incidencias-lista'); // Cambiado a /incidencias-lista
     },
 
     // Redirige a la vista de administración de usuarios

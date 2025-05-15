@@ -18,12 +18,15 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="incidencia in incidencias" :key="incidencia._id">
+            <tr
+              v-for="incidencia in incidencias"
+              :key="incidencia._id"
+              @click="verDetalleIncidencia(incidencia._id)"  style="cursor: pointer;"  >
               <td>{{ incidencia.type }}</td>
               <td>{{ incidencia.description }}</td>
               <td>{{ incidencia.executiveName }}</td>
-              <td>{{ new Date(incidencia.createdAt).toLocaleDateString() }}</td>
-              <td>{{ new Date(incidencia.updatedAt).toLocaleTimeString() }}</td>
+              <td>{{ incidencia.createdAt }}</td>
+              <td>{{ incidencia.updatedAt }}</td>
               <td>{{ incidencia.comments }}</td>
             </tr>
             <tr v-if="incidencias.length === 0">
@@ -49,43 +52,42 @@ export default {
     this.obtenerIncidencias();
   },
   methods: {
-   obtenerIncidencias() {
-  const token = localStorage.getItem('token');  // Obtener el token desde localStorage
+    obtenerIncidencias() {
+      const token = localStorage.getItem('token');  // Obtener el token desde localStorage
 
-  // Verificar que el token esté disponible
-  if (!token) {
-    console.error('Token no proporcionado');
-    alert("Por favor inicie sesión");
-    return;
-  }
+      // Asegúrate de que el token esté disponible
+      if (!token) {
+        console.error('Token no proporcionado');
+        alert("Por favor inicie sesión");
+        return;
+      }
 
-  console.log('Token al obtener incidencias:', token); // AGREGAR ESTE LOG
+      console.log('Token al obtener incidencias:', token);
+      // Configurar los encabezados con el token
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Añadir el token al header
+        },
+      };
 
-  // Configurar los encabezados con el token
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,  // Añadir el token al header
+      // Realizar la solicitud GET para obtener las incidencias
+      axios.get('https://proyectodetitulo.onrender.com/api/incidencias', config)  // Enviar la solicitud con los headers
+        .then(response => {
+          this.incidencias = response.data;  // Guardar las incidencias en la variable
+        })
+        .catch(error => {
+          console.error('Error al cargar las incidencias:', error);
+          alert('Error al cargar las incidencias');
+        });
     },
-  };
-
-  // Realizar la solicitud GET para obtener las incidencias
-  axios.get('https://proyectodetitulo.onrender.com/api/incidencias', config)  // Enviar la solicitud con los headers
-    .then(response => {
-      this.incidencias = response.data;  // Guardar las incidencias en la variable
-    })
-    .catch(error => {
-      console.error('Error al cargar las incidencias:', error);
-      alert('Error al cargar las incidencias');
-    });
-},
-     
-      
     navegarAFormulario() {
       this.$router.push('/dashboard-ejecutivo');  // Redirige al formulario
+    },
+    verDetalleIncidencia(id) {  // Nueva función para ver el detalle
+      this.$router.push(`/incidencias/${id}`); // Navega a la ruta con el ID
     }
   }
 };
-
 </script>
 
 <style scoped>
@@ -99,10 +101,10 @@ export default {
   background-color: #b81e1e;  /* Barra roja */
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* Cambié align-items para estar más cerca de la parte superior */
-  padding-top: 200px;  /* Ajusté el espacio en la parte superior */
-  position: fixed;  /* Fijar la barra a la izquierda */
-  height: 100%;  /* Aseguramos que la barra ocupe toda la altura */
+  align-items: flex-start;
+  padding-top: 200px;
+  position: fixed;
+  height: 100%;
 }
 
 .sidebar-button {
@@ -112,7 +114,9 @@ export default {
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  margin-top: 10px;  /* Margen para que el botón no quede pegado */
+  margin-top: 10px;
+  width: 80%;
+  text-align: center;
 }
 
 .sidebar-button:hover {
@@ -123,7 +127,7 @@ export default {
   flex: 1;
   padding: 20px;
   background-color: #f9f9f9;
-  margin-left: 210px;  /* Dejamos espacio para la barra lateral */
+  margin-left: 210px;
 }
 
 h2 {
