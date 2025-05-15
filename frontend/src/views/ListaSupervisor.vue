@@ -1,7 +1,7 @@
 <template>
   <div class="incidencias-lista-container">
     <div class="sidebar">
-      <button class="sidebar-button" @click="navegarADashboard">Volver al Perfil Supervisor</button>
+      <button class="sidebar-button" @click="navegarADashboard">Volver al Menu Principal</button>
     </div>
     <div class="main-content">
       <h2>Lista de Incidencias</h2>
@@ -20,15 +20,30 @@
           </thead>
           <tbody>
             <tr v-for="incidencia in incidencias" :key="incidencia._id">
-              <td>{{ incidencia.type }}</td>
-              <td>{{ incidencia.description }}</td>
+              <td>
+                <input v-if="editingId === incidencia._id" v-model="editedIncidencia.type" />
+                <span v-else>{{ incidencia.type }}</span>
+              </td>
+              <td>
+                <textarea v-if="editingId === incidencia._id" v-model="editedIncidencia.description"></textarea>
+                <span v-else>{{ incidencia.description }}</span>
+              </td>
               <td>{{ incidencia.executiveName }}</td>
               <td>{{ new Date(incidencia.createdAt).toLocaleDateString() }}</td>
               <td>{{ new Date(incidencia.updatedAt).toLocaleTimeString() }}</td>
-              <td>{{ incidencia.comments }}</td>
               <td>
-                <button @click="verDetalleIncidencia(incidencia._id)" class="edit-button">Editar</button>
-                <button @click="borrarIncidencia(incidencia._id)" class="delete-button">Borrar</button>
+                <textarea v-if="editingId === incidencia._id" v-model="editedIncidencia.comments"></textarea>
+                <span v-else>{{ incidencia.comments }}</span>
+              </td>
+              <td>
+                <div v-if="editingId === incidencia._id">
+                  <button @click="guardarIncidencia(incidencia._id)" class="save-button">Guardar</button>
+                  <button @click="cancelarEdicion" class="cancel-button">Cancelar</button>
+                </div>
+                <div v-else>
+                  <button @click="editarIncidencia(incidencia)" class="edit-button">Editar</button>
+                  <button @click="borrarIncidencia(incidencia._id)" class="delete-button">Borrar</button>
+                </div>
               </td>
             </tr>
             <tr v-if="incidencias.length === 0">
@@ -48,6 +63,8 @@ export default {
   data() {
     return {
       incidencias: [],
+      editingId: null,
+      editedIncidencia: {},
     };
   },
   mounted() {
@@ -81,8 +98,43 @@ export default {
     navegarADashboard() {
       this.$router.push('/dashboard-supervisor');
     },
-    verDetalleIncidencia(id) {
-      this.$router.push(`/incidencias/${id}`);
+    editarIncidencia(incidencia) {
+      this.editingId = incidencia._id;
+      this.editedIncidencia = { ...incidencia };
+    },
+    cancelarEdicion() {
+      this.editingId = null;
+      this.editedIncidencia = {};
+    },
+    async guardarIncidencia(id) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Token no proporcionado');
+        alert('Por favor, inicie sesión');
+        this.$router.push('/');
+        return;
+      }
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      try {
+        const response = await axios.put(
+          `https://proyectodetitulo.onrender.com/api/incidencias/${id}`,
+          this.editedIncidencia,
+          config
+        );
+        console.log('Incidencia actualizada:', response.data);
+        alert('Incidencia actualizada exitosamente');
+        this.editingId = null;
+        this.obtenerIncidencias();
+      } catch (error) {
+        console.error('Error al actualizar la incidencia:', error);
+        alert('Error al actualizar la incidencia');
+      }
     },
     async borrarIncidencia(id) {
       const token = localStorage.getItem('token');
@@ -173,7 +225,8 @@ h2 {
   border-collapse: collapse;
 }
 
-.incidencias-tabla th, .incidencias-tabla td {
+.incidencias-tabla th,
+.incidencias-tabla td {
   border: 1px solid #333;
   padding: 8px 12px;
   text-align: left;
@@ -190,7 +243,7 @@ h2 {
 }
 
 .edit-button {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   padding: 5px 10px;
   border: none;
@@ -201,6 +254,34 @@ h2 {
 
 .edit-button:hover {
   background-color: #45a049;
+}
+
+.save-button {
+  background-color: #2196f3;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.save-button:hover {
+  background-color: #1976d2;
+}
+
+.cancel-button {
+  background-color: #ccc;
+  color: #333;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.cancel-button:hover {
+  background-color: #aaa;
 }
 
 .delete-button {
