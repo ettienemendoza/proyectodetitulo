@@ -83,7 +83,13 @@ export default {
     // Agregar un nuevo usuario
     async agregarUsuario() {
       try {
-        const response = await axios.post('https://proyectodetitulo.onrender.com/api/usuarios', this.nuevoUsuario);
+        const token = localStorage.getItem('token');
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const response = await axios.post('https://proyectodetitulo.onrender.com/api/usuarios', this.nuevoUsuario, config);
         console.log(response.data);
         alert('Usuario creado exitosamente');
         this.obtenerUsuarios();
@@ -97,7 +103,13 @@ export default {
     // Obtener la lista de usuarios
     async obtenerUsuarios() {
       try {
-        const response = await axios.get('https://proyectodetitulo.onrender.com/api/usuarios');
+        const token = localStorage.getItem('token');
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const response = await axios.get('https://proyectodetitulo.onrender.com/api/usuarios', config);
         this.usuarios = response.data;
       } catch (error) {
         console.error('Error al obtener los usuarios:', error);
@@ -107,24 +119,38 @@ export default {
     // Eliminar un usuario
     async eliminarUsuario(id) {
       try {
-        await axios.delete(`https://proyectodetitulo.onrender.com/api/usuarios/${id}`);
+        const token = localStorage.getItem('token');
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        await axios.delete(`https://proyectodetitulo.onrender.com/api/usuarios/${id}`, config);
         alert('Usuario eliminado');
         this.obtenerUsuarios();
       } catch (error) {
         console.error('Error al eliminar el usuario:', error);
+        alert('Error al eliminar el usuario');
       }
     },
-    editarUsuario(usuario) {
-      this.editingId = usuario._id;
+    editarUsuario(id) {
+      this.editingId = id;
     },
     async guardarUsuario(usuario) {
       try {
+        const token = localStorage.getItem('token');
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
         const response = await axios.put(
           `https://proyectodetitulo.onrender.com/api/usuarios/${usuario._id}`,
           {
             nombre: usuario.nombre,
             cargo: usuario.cargo,
-          }
+          },
+          config
         );
         console.log("Usuario actualizado", response.data);
         alert("Usuario actualizado exitosamente");
@@ -143,6 +169,7 @@ export default {
 </script>
 
 <style scoped>
+/* Estilos del formulario de administración */
 .admin-container {
   padding: 20px;
   background-color: #f2f2f2;
@@ -210,7 +237,7 @@ select {
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   transition: border-color 0.3s ease;
   font-size: 1em;
 }
@@ -273,8 +300,8 @@ table thead tr {
 
 table th,
 table td {
-  padding: 15px;
-  border-bottom: 1px solid #ddd;
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
   text-align: left;
   font-size: 1em;
 }
@@ -285,7 +312,7 @@ table tbody tr:hover {
 
 .edit-button,
 .delete-button {
-  padding: 8px 15px;
+  padding: 8px 12px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
