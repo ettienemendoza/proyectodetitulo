@@ -1,54 +1,56 @@
 <template>
   <div class="admin-container">
-    <h2>Administración</h2>
-    <div class="add-user-card">
-      <h3>Añadir Usuario</h3>
-      <form @submit.prevent="agregarUsuario">
-        <div class="form-group">
-          <label for="nombre">Nombre:</label>
-          <input type="text" id="nombre" v-model="nuevoUsuario.nombre" required />
+    <h2 class="page-title">Administración</h2>
+    <div class="main-content">
+      <div class="add-user-card">
+        <h3>Añadir Usuarios</h3>
+        <form @submit.prevent="agregarUsuario">
+          <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" v-model="nuevoUsuario.nombre" required />
+          </div>
+          <div class="form-group">
+            <label for="contrasena">Contraseña:</label>
+            <input type="password" id="contrasena" v-model="nuevoUsuario.contrasena" required />
+          </div>
+          <div class="form-group">
+            <label for="cargo">Cargo:</label>
+            <select id="cargo" v-model="nuevoUsuario.cargo" required>
+              <option value="ejecutivo">Ejecutivo</option>
+              <option value="supervisor">Supervisor</option>
+            </select>
+          </div>
+          <button type="submit" class="add-button">Crear</button>
+        </form>
+      </div>
+      <div class="user-list-card">
+        <h3>Lista de Usuarios</h3>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Cargo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="usuario in usuarios" :key="usuario._id">
+                <td>{{ usuario.nombre }}</td>
+                <td>{{ usuario.cargo }}</td>
+                <td>
+                  <button @click="editarUsuario(usuario)" class="edit-button">Editar</button>
+                  <button @click="eliminarUsuario(usuario._id)" class="delete-button">Eliminar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="form-group">
-          <label for="contrasena">Contraseña:</label>
-          <input type="password" id="contrasena" v-model="nuevoUsuario.contrasena" required />
-        </div>
-        <div class="form-group">
-          <label for="cargo">Cargo:</label>
-          <select id="cargo" v-model="nuevoUsuario.cargo" required>
-            <option value="ejecutivo">Ejecutivo</option>
-            <option value="supervisor">Supervisor</option>
-          </select>
-        </div>
-        <button type="submit" class="add-button">Crear</button>
-      </form>
-    </div>
-    <div class="user-list-card">
-      <h3>Lista de Usuarios</h3>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Cargo</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="usuario in usuarios" :key="usuario._id">
-              <td>{{ usuario.nombre }}</td>
-              <td>{{ usuario.cargo }}</td>
-              <td>
-                <button @click="editarUsuario(usuario)" class="edit-button">Editar</button>
-                <button @click="eliminarUsuario(usuario._id)" class="delete-button">Eliminar</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </div>
+    <button class="back-to-menu-button" @click="volverAlMenuPrincipal">Volver al Menú Principal</button>
   </div>
 </template>
-
 
 <script>
 import axios from 'axios';
@@ -125,42 +127,52 @@ export default {
         alert("Error al actualizar usuario");
       }
     },
+    volverAlMenuPrincipal() {
+      this.$router.push('/dashboard-supervisor'); // Ajusta la ruta según tu configuración
+    },
   },
 };
 </script>
 
-
 <style scoped>
-/* Estilos del formulario de administración */
-admin-container {
+.admin-container {
   padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin: 20px auto;
-  max-width: 800px;
+  background-color: #f2f2f2;
+  min-height: 100vh;
 }
 
-h2 {
-  color: #b81e1e;
+.page-title {
+  background-color: #b81e1e;
+  color: white;
+  padding: 10px;
+  margin-bottom: 20px;
   text-align: center;
+  border-radius: 5px;
+}
+
+.main-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 20px;
   margin-bottom: 20px;
 }
 
-.add-user-card {
+.add-user-card,
+.user-list-card {
   background-color: white;
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  flex: 1;
 }
 
-.add-user h3 {
+.add-user-card h3,
+.user-list-card h3 {
   color: #b81e1e;
   margin-bottom: 15px;
   text-align: left;
 }
-
 
 .form-group {
   margin-bottom: 15px;
@@ -212,23 +224,15 @@ button:active {
   background-color: #b81e1e;
   color: white;
   margin-top: 10px;
+  width: 100%;
 }
 
 .add-button:hover {
   background-color: #a31d1d;
 }
 
-.user-list-card {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.user-list h3 {
-  color: #b81e1e;
-  margin-bottom: 15px;
-  text-align: left;
+.user-list {
+  margin-top: 0;
 }
 
 table {
@@ -263,12 +267,12 @@ table tbody tr:hover {
   border-radius: 5px;
   cursor: pointer;
   font-size: 0.9em;
+  margin: 2px;
 }
 
 .edit-button {
   background-color: #4caf50;
   color: white;
-  margin-right: 5px;
 }
 
 .edit-button:hover {
@@ -282,5 +286,30 @@ table tbody tr:hover {
 
 .delete-button:hover {
   background-color: #a71010;
+}
+
+.back-to-menu-button {
+  background-color: #b81e1e;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 20px;
+  align-self: center;
+  width: 200px;
+  margin: 20px auto 0 auto;
+  display: block;
+  text-align: center;
+}
+
+.back-to-menu-button:hover {
+  background-color: #a31d1d;
+}
+
+.back-to-menu-button:active {
+  transform: translateY(2px);
 }
 </style>
