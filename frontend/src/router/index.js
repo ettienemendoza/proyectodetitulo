@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import LoginPage from '../views/LoginPage.vue';
 import DashboardEjecutivo from '../views/DashboardEjecutivo.vue';
 import DashboardSupervisor from '../views/DashboardSupervisor.vue';
-import IncidenciaForm from '../components/IncidenceForm.vue';
+
 import IncidenciaSupervisor from '../views/IncidenciaSupervisor.vue';
 import IncidenciasLista from '../views/IncidenciasLista.vue';
 import AdministracionUsuarios from '../views/AdministracionUsuarios.vue';
