@@ -268,6 +268,37 @@ app.delete('/api/usuarios/:id', authenticateJWT, async (req, res) => {
   }
 });
 
+//graficos
+app.get('/api/reporte-incidencias', authenticateJWT, async (req, res) => {
+  const { tipoError, fechaInicio, fechaFin } = req.query;
+
+  let query = {};
+
+  if (tipoError) {
+    query.type = tipoError;
+  }
+
+  if (fechaInicio && fechaFin) {
+    query.createdAt = {
+      $gte: new Date(fechaInicio),
+      $lte: new Date(fechaFin),
+    };
+  } else if (fechaInicio) {
+    query.createdAt = { $gte: new Date(fechaInicio) };
+  } else if (fechaFin) {
+    query.createdAt = { $lte: new Date(fechaFin) };
+  }
+
+  try {
+    const incidencias = await Incidence.find(query);
+    res.status(200).json(incidencias);
+  } catch (error) {
+    console.error('Error al obtener el reporte de incidencias:', error.message);
+    res.status(500).json({ message: 'Error al obtener el reporte', error: error.message });
+  }
+});
+
+
 
 // Iniciar el servidor
 app.listen(3000, () => {
