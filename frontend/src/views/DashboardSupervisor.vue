@@ -30,7 +30,7 @@ export default {
 
     // Redirige a la vista de lista de incidencias
     irAListaIncidencias() {
-      this.$router.push('/incidencias-lista'); // Cambiado a /incidencias-lista
+      this.$router.push('/lista-supervisor'); // Cambiado a la lista general
     },
 
     // Redirige a la vista de administración de usuarios
