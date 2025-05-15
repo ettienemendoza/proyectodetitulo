@@ -9,7 +9,7 @@
         <h3>Gráfico de Estadísticas</h3>
       </div>
 
-      <div class="option-card" @click="irAListaIncidencias">
+      <div class="option-card" @click="irAListaSupervisor">
         <h3>Lista de Incidencias</h3>
       </div>
 
@@ -29,8 +29,8 @@ export default {
     },
 
     // Redirige a la vista de lista de incidencias
-    irAListaIncidencias() {
-      this.$router.push('/lista-supervisor'); // Cambiado a la lista general
+    irAListaSupervisor() {
+      this.$router.push('/lista-supervisor');
     },
 
     // Redirige a la vista de administración de usuarios
