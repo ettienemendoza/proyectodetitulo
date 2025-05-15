@@ -1,7 +1,7 @@
 <template>
   <div class="admin-container">
     <h2>Administración de Usuarios</h2>
-    <!-- Formulario para agregar un usuario -->
+    
     <div class="add-user">
       <h3>Agregar Usuario</h3>
       <form @submit.prevent="agregarUsuario">
@@ -23,7 +23,7 @@
         <button type="submit">Crear Usuario</button>
       </form>
     </div>
-    <!-- Lista de usuarios -->
+
     <div class="user-list">
       <h3>Lista de Usuarios</h3>
       <table>
@@ -52,7 +52,7 @@
 import axios from 'axios';
 
 export default {
-  name: 'AdministracionUsuarios',  // Nombre del componente corregido
+  name: 'AdministracionUsuarios',
   data() {
     return {
       nuevoUsuario: {
@@ -64,17 +64,17 @@ export default {
     };
   },
   mounted() {
-    this.obtenerUsuarios();  // Cargar los usuarios cuando el componente se monta
+    this.obtenerUsuarios();
   },
   methods: {
     // Agregar un nuevo usuario
     async agregarUsuario() {
       try {
-        const response = await axios.post('https://proyectodetitulo.onrender.com/api/usuarios', this.nuevoUsuario);
+        const response = await axios.post('https://proyectodetitulo.onrender.com/api/usuarios', this.nuevoUsuario); // Usa la URL de Render
         console.log(response.data);
         alert('Usuario creado exitosamente');
-        this.obtenerUsuarios();  // Actualizar la lista de usuarios
-        this.nuevoUsuario = { nombre: '', contrasena: '', cargo: 'ejecutivo' };  // Limpiar el formulario
+        this.obtenerUsuarios();
+        this.nuevoUsuario = { nombre: '', contrasena: '', cargo: 'ejecutivo' };
       } catch (error) {
         console.error('Error al agregar el usuario:', error);
         alert('Error al crear el usuario');
@@ -84,7 +84,7 @@ export default {
     // Obtener la lista de usuarios
     async obtenerUsuarios() {
       try {
-        const response = await axios.get('http://localhost:3000/api/usuarios');
+        const response = await axios.get('https://proyectodetitulo.onrender.com/api/usuarios'); // Usa la URL de Render
         this.usuarios = response.data;
       } catch (error) {
         console.error('Error al obtener los usuarios:', error);
@@ -94,9 +94,9 @@ export default {
     // Eliminar un usuario
     async eliminarUsuario(id) {
       try {
-        await axios.delete(`http://localhost:3000/api/usuarios/${id}`);
+        await axios.delete(`https://proyectodetitulo.onrender.com/api/usuarios/${id}`); // Usa la URL de Render
         alert('Usuario eliminado');
-        this.obtenerUsuarios();  // Actualizar la lista de usuarios
+        this.obtenerUsuarios();
       } catch (error) {
         console.error('Error al eliminar el usuario:', error);
       }
@@ -173,4 +173,6 @@ button:hover {
   background-color: darkred;
 }
 </style>
-
+/* Este es el componente de Vue para la administración de usuarios. 
+   Permite agregar nuevos usuarios y listar los existentes. 
+   También incluye la funcionalidad para eliminar usuarios. */
