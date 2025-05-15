@@ -199,7 +199,7 @@ export default {
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 10px;
-  padding: 20px;
+  padding: 200px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   width: 500px;
   margin: 20px auto;
