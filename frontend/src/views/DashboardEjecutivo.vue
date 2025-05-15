@@ -178,7 +178,7 @@ export default {
 
 .logout-button {
   margin-top: auto; /* Empuja el botón hacia la parte inferior */
-  margin-bottom: 20px; /* Espacio en la parte inferior */
+  margin-bottom: 200px; /* Espacio en la parte inferior */
   display: flex; /* Para alinear texto e icono */
   align-items: center;
   justify-content: center;
