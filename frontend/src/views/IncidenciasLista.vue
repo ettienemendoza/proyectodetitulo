@@ -22,8 +22,8 @@
               <td>{{ incidencia.type }}</td>
               <td>{{ incidencia.description }}</td>
               <td>{{ incidencia.executiveName }}</td>
-              <td>{{ incidencia.createdAt }}</td>
-              <td>{{ incidencia.updatedAt }}</td>
+              <td>{{ new Date(incidencia.createdAt).toLocaleDateString() }}</td>
+              <td>{{ new Date(incidencia.updatedAt).toLocaleTimeString() }}</td>
               <td>{{ incidencia.comments }}</td>
             </tr>
             <tr v-if="incidencias.length === 0">
