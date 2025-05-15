@@ -1,3 +1,5 @@
+import Chart from 'chart.js/auto';
+
 <template>
   <div class="graficos-container">
     <h2 class="page-title">Gráficos de Estadísticas</h2>
