@@ -55,6 +55,7 @@ export default {
 </script>
 
 <style scoped>
+
 .supervisor-container {
   text-align: center;
   padding: 20px;
@@ -62,19 +63,27 @@ export default {
   min-height: 100vh;
   background-image: url('@/assets/supervisor.jpg'); /* Ruta a tu imagen */
   background-size: cover;
-  background-position: center;
+  background-position: center top; /* Centra la imagen desde la parte superior */
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch; /* Estira los elementos horizontalmente */
   justify-content: flex-start; /* Alinea los elementos desde la parte superior */
+  filter: grayscale(100%); /* Aplica un filtro de escala de grises */
 }
 
 .supervisor-header {
-  background-color: rgba(184, 30, 30, 0.8); /* Fondo con transparencia para mejor legibilidad */
+  background-color: #b81e1e; /* Color de fondo sólido */
   color: white;
   padding: 20px;
   margin-bottom: 30px;
-  border-radius: 10px;
+  text-align: center; /* Centra el texto dentro del encabezado */
+}
+
+.supervisor-header h1,
+.supervisor-header h3 {
+  background-color: transparent; /* Asegura que el fondo del texto no sea transparente */
+  padding: 5px 0; /* Añade un poco de espacio alrededor del texto */
+  margin: 0; /* Elimina los márgenes predeterminados */
 }
 
 .supervisor-options {
