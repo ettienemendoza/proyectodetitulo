@@ -272,6 +272,8 @@ app.delete('/api/usuarios/:id', authenticateJWT, async (req, res) => {
 app.get('/api/reporte-incidencias', authenticateJWT, async (req, res) => {
   const { tipoError, fechaInicio, fechaFin } = req.query;
 
+  console.log('Parámetros de la consulta recibidos:', req.query); // <---- AGREGAR ESTE LOG
+
   let query = {};
 
   if (tipoError) {
@@ -289,8 +291,11 @@ app.get('/api/reporte-incidencias', authenticateJWT, async (req, res) => {
     query.createdAt = { $lte: new Date(fechaFin) };
   }
 
+  console.log('Consulta MongoDB construida:', query); // <---- AGREGAR ESTE LOG
+
   try {
     const incidencias = await Incidence.find(query);
+    console.log('Incidencias encontradas:', incidencias); // <---- AGREGAR ESTE LOG
     res.status(200).json(incidencias);
   } catch (error) {
     console.error('Error al obtener el reporte de incidencias:', error.message);
