@@ -45,6 +45,7 @@
     </div>
   </div>
 </template>
+
 <script>
 import axios from 'axios';
 import Chart from 'chart.js/auto';
@@ -98,117 +99,107 @@ export default {
       }
     },
     procesarDatos(data) {
-  console.log('Datos recibidos para procesar:', data);
-  if (!data || data.length === 0) {
-    this.resumen = 'No se encontraron incidencias con los filtros seleccionados.';
-    this.chartData = null;
-    if (this.chartInstance) {
-      this.chartInstance.destroy();
-      this.chartInstance = null;
-    }
-    return;
-  }
-  
-  ;
+      console.log('Datos recibidos para procesar:', data);
+      if (!data || data.length === 0) {
+        this.resumen = 'No se encontraron incidencias con los filtros seleccionados.';
+        this.chartData = null;
+        if (this.chartInstance) {
+          this.chartInstance.destroy();
+          this.chartInstance = null;
+        }
+        return;
+      }
+      const conteoPorTipo = {};
+      let totalIncidencias = 0;
 
-  console.log('Conteo por tipo:', conteoPorTipo);
-  const labels = Object.keys(conteoPorTipo);
-  const valores = Object.values(conteoPorTipo);
-  //const porcentajes = valores.map(valor => ((valor / totalIncidencias) * 100).toFixed(2) + '%');
+      data.forEach(incidencia => {
+        const tipo = incidencia.type;
+        conteoPorTipo[`${tipo}`] = (conteoPorTipo[`${tipo}`] || 0) + 1;
+        totalIncidencias++;
+      });
 
-  this.chartData = {
-    labels: labels,
-    datasets: [{
-      label: 'Tipos de Incidencia',
-      data: valores,
-      backgroundColor: [
-        'rgba(255, 99, 132, 0.6)',
-        'rgba(54, 162, 235, 0.6)',
-        'rgba(255, 206, 86, 0.6)',
-        'rgba(75, 192, 192, 0.6)',
-        'rgba(153, 102, 255, 0.6)',
-        'rgba(255, 159, 64, 0.6)',
-        'rgba(199, 199, 199, 0.6)',
-        'rgba(128, 0, 128, 0.6)', // Purple
-        'rgba(0, 128, 0, 0.6)',   // Green
-        'rgba(0, 0, 128, 0.6)',   // Navy
-      ],
-      borderColor: [
-        'rgba(255, 99, 132, 1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-        'rgba(75, 192, 192, 1)',
-        'rgba(153, 102, 255, 1)',
-        'rgba(255, 159, 64, 1)',
-        'rgba(199, 199, 199, 1)',
-        'rgba(128, 0, 128, 1)',
-        'rgba(0, 128, 0, 1)',
-        'rgba(0, 0, 128, 1)',
-      ],
-      borderWidth: 1,
-    }]
-  };
+      console.log('Conteo por tipo:', conteoPorTipo);
+      const labels = Object.keys(conteoPorTipo);
+      const valores = Object.values(conteoPorTipo);
+      const porcentajes = valores.map(valor => ((valor / totalIncidencias) * 100).toFixed(2) + '%');
 
-  console.log('Datos del gráfico (this.chartData):', this.chartData);
+      this.chartData = {
+        labels: labels,
+        datasets: [{
+          label: 'Tipos de Incidencia',
+          data: valores,
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.6)',
+            'rgba(54, 162, 235, 0.6)',
+            'rgba(255, 206, 86, 0.6)',
+            'rgba(75, 192, 192, 0.6)',
+            'rgba(153, 102, 255, 0.6)',
+            'rgba(255, 159, 64, 0.6)',
+            'rgba(199, 199, 199, 0.6)',
+            'rgba(128, 0, 128, 0.6)', // Purple
+            'rgba(0, 128, 0, 0.6)',   // Green
+            'rgba(0, 0, 128, 0.6)',   // Navy
+          ],
+          borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)',
+            'rgba(199, 199, 199, 1)',
+            'rgba(128, 0, 128, 1)',
+            'rgba(0, 128, 0, 1)',
+            'rgba(0, 0, 128, 1)',
+          ],
+          borderWidth: 1,
+        }]
+      };
 
-  this.$nextTick(() => {
-    this.renderChart();
-  });
-},
-renderChart() {
-  const canvas = this.$refs.graficoCanvas;
-  console.log('Elemento canvas en renderChart:', canvas); // <---- Mantenemos este log
-  if (canvas && this.chartData) {
-    const ctx = canvas.getContext('2d');
-    console.log('Contexto del canvas:', ctx);
-    if (this.chartInstance) {
-      this.chartInstance.destroy();
-      this.chartInstance = null;
-    }
-    this.chartInstance = new Chart(ctx, {
-      type: 'pie',
-      data: this.chartData,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'top'
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                let label = context.label || '';
-                if (label) {
-                  label += ': ';
+      console.log('Datos del gráfico (this.chartData):', this.chartData);
+
+      this.$nextTick(() => {
+        this.renderChart();
+      });
+    },
+    renderChart() {
+      const canvas = this.$refs.graficoCanvas;
+      console.log('Elemento canvas en renderChart:', canvas);
+      if (canvas && this.chartData) {
+        const ctx = canvas.getContext('2d');
+        console.log('Contexto del canvas:', ctx);
+        if (this.chartInstance) {
+          this.chartInstance.destroy();
+          this.chartInstance = null;
+        }
+        this.chartInstance = new Chart(ctx, {
+          type: 'pie',
+          data: this.chartData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    let label = context.label || '';
+                    if (label) {
+                      label += ': ';
+                    }
+                    if (context.parsed.y !== null) {
+                      label += context.parsed.y + ' (' + context.dataset.data[`${context.dataIndex}`] + ')';
+                    }
+                    return label;
+                  }
                 }
-                if (context.parsed.y !== null) {
-                  label += context.parsed.y + ' (' + context.dataset.data[`${context.dataIndex}`] + ')';
-                }
-                return label;
               }
             }
           }
-        }
-      }
-    });
-    console.log('Instancia del gráfico:', this.chartInstance);
-  }
-},
-// ... el resto de tus métodos ...
-      
-    descargarGrafico() {
-      const canvas = this.$refs.graficoCanvas;
-      if (canvas) {
-        const dataURL = canvas.toDataURL('image/png');
-        const a = document.createElement('a');
-        a.href = dataURL;
-        a.download = 'grafico_incidencias.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      } else {
-        alert('No hay gráfico para descargar.');
+        });
+        console.log('Instancia del gráfico:', this.chartInstance);
       }
     },
     volverAlMenuPrincipal() {
@@ -222,6 +213,7 @@ renderChart() {
   },
 };
 </script>
+
 <style scoped>
 .graficos-container {
   padding: 20px;
