@@ -1,6 +1,5 @@
 <template>
-
-<div class="graficos-container">
+  <div class="graficos-container">
     <h2 class="page-title">Gráficos de Estadísticas</h2>
     <div class="report-layout">
       <div class="filter-section">
@@ -46,7 +45,6 @@
     </div>
   </div>
 </template>
-
 <script>
 import axios from 'axios';
 import Chart from 'chart.js/auto';
@@ -86,8 +84,11 @@ export default {
         params: this.filtro,
       };
 
+      console.log('Filtros enviados al backend:', this.filtro);
+
       try {
         const response = await axios.get('https://proyectodetitulo.onrender.com/api/reporte-incidencias', config);
+        console.log('Respuesta del backend:', response.data);
         const data = response.data;
         this.procesarDatos(data);
         this.reporteGenerado = true;
@@ -97,6 +98,7 @@ export default {
       }
     },
     procesarDatos(data) {
+      console.log('Datos recibidos para procesar:', data);
       if (!data || data.length === 0) {
         this.resumen = 'No se encontraron incidencias con los filtros seleccionados.';
         this.chartData = null;
@@ -175,7 +177,7 @@ export default {
           options: {
             responsive: true,
             maintainAspectRatio: false, // Permite ajustar la proporción
-            plugins: {
+            plugins:{
               legend: {
                 position: 'top'
               },
@@ -223,7 +225,6 @@ export default {
   },
 };
 </script>
-
 <style scoped>
 .graficos-container {
   padding: 20px;
@@ -266,17 +267,13 @@ export default {
 
 .form-group {
   margin-bottom: 15px;
-
 }
 
 .form-group label {
   display: block;
   margin-bottom: 5px;
-  
   font-weight: bold;
-
 }
-
 
 .form-group input,
 .form-group select {
@@ -284,9 +281,7 @@ export default {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
- 
   box-sizing: border-box;
- 
   font-size: 1em;
 }
 
@@ -326,7 +321,6 @@ export default {
   border: 1px solid #eee;
   padding: 15px;
   border-radius: 5px;
-
   text-align: center;
 }
 

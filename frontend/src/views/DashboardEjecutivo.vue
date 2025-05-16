@@ -1,135 +1,45 @@
 <template>
-  <div class="dashboard-container">
-    <div class="sidebar">
-      <button class="sidebar-button" @click="navegarAIncidencias">Lista de Incidencias</button>
-      <button class="sidebar-button logout-button" @click="cerrarSesion">
-        CERRAR SESIÓN
-        <span class="logout-icon">🚪</span> </button>
+  <div class="supervisor-container">
+    <div class="supervisor-header">
+      <h1>Supervisor</h1>
+      <h3>¿Qué deseas hacer?</h3>
     </div>
-    <div class="main-content">
-      <div class="incidence-form-container">
-        <h2>Formulario de Incidencia</h2>
+    <div class="supervisor-options">
+      <div class="option-card" @click="irAGrafico">
+        <h3>Gráfico de Estadísticas</h3>
+      </div>
 
-        <!-- Tipo de error -->
-        <div class="form-group">
-          <div class="form-label">
-            <label for="tipoError">Tipo de Error:</label>
-          </div>
-          <div class="form-input">
-            <select id="tipoError" v-model="incidencia.type" @change="mostrarInputOtros">
-              <option value="">Seleccione un tipo de error</option>
-              <option value="Biometría">Biometría</option>
-              <option value="Fallo de preguntas">Fallo de preguntas</option>
-              <option value="Problemas en el sistema">Problemas en el sistema</option>
-              <option value="Sin preguntas">Sin preguntas</option>
-              <option value="Otros">Otros</option>
-            </select>
-          </div>
-        </div>
+      <div class="option-card" @click="irAListaSupervisor">
+        <h3>Lista de Incidencias</h3>
+      </div>
 
-        <!-- Campo para especificar otro tipo de error -->
-        <div class="form-group" v-if="mostrarOtroTipoError">
-          <div class="form-label">
-            <label for="otroTipoError">Especificar Otro Error:</label>
-          </div>
-          <div class="form-input">
-            <input type="text" id="otroTipoError" v-model="incidencia.otroTipoError" placeholder="Ingrese el tipo de error" />
-          </div>
-        </div>
-
-        <!-- Descripción -->
-        <div class="form-group">
-          <div class="form-label">
-            <label for="descripcion">Descripción:</label>
-          </div>
-          <div class="form-input">
-            <textarea id="descripcion" v-model="incidencia.description" placeholder="Ingrese la descripción del error"></textarea>
-          </div>
-        </div>
-
-        <!-- Comentarios (solo visible para el supervisor) -->
-        <div v-if="usuario.rol === 'supervisor'" class="form-group">
-          <div class="form-label">
-            <label for="comentarios">Comentarios:</label>
-          </div>
-          <div class="form-input">
-            <textarea id="comentarios" v-model="incidencia.comments" placeholder="Ingrese los comentarios del error"></textarea>
-          </div>
-        </div>
-
-        <!-- Botón de agregar -->
-        <button @click="guardarIncidencia" class="agregar-button">Agregar</button>
+      <div class="option-card" @click="irAAdministracion">
+        <h3>Administración</h3>
       </div>
     </div>
+    <button class="logout-button" @click="cerrarSesion">
+      CERRAR SESIÓN
+      <span class="logout-icon">🚪</span>
+    </button>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
-  data() {
-    return {
-      incidencia: {
-        type: '',
-        otroTipoError: '',
-        description: '',
-        executiveName: '',
-        comments: '',
-        fecha: '',
-        hora: '',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      mostrarOtroTipoError: false,
-      usuario: {}, // Aquí guardamos los datos del usuario logueado
-    };
-  },
-  mounted() {
-    // Asignamos el nombre del usuario logueado al nombre ejecutivo
-    this.usuario = JSON.parse(localStorage.getItem('usuario')) || {}; // Recuperamos el usuario logueado desde localStorage
-    this.incidencia.executiveName = this.usuario.nombre || ''; // Asignamos el nombre del usuario logueado automáticamente
-  },
   methods: {
-    mostrarInputOtros() {
-      this.mostrarOtroTipoError = (this.incidencia.type === 'Otros');
-      if (!this.mostrarOtroTipoError) {
-        this.incidencia.otroTipoError = '';
-      }
+    // Redirige a la vista de gráfico de estadísticas
+    irAGrafico() {
+      this.$router.push('/graficos-supervisor');
     },
-    guardarIncidencia() {
-      // Asignamos los valores de fecha y hora
-      this.incidencia.fecha = new Date().toLocaleDateString();
-      this.incidencia.hora = new Date().toLocaleTimeString();
 
-      // Obtener el token del localStorage
-      const token = localStorage.getItem('token');
-
-      // Verificar que todos los campos estén completos antes de enviar
-      if (!this.incidencia.type || !this.incidencia.description || !this.incidencia.executiveName) {
-        alert('Por favor complete todos los campos');
-        return;
-      }
-
-      // Configurar los headers para enviar el token
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
-      // Enviar la incidencia al backend
-      axios.post('https://proyectodetitulo.onrender.com/api/incidencias', this.incidencia, config)
-        .then(response => {
-          console.log('Incidencia registrada:', response);
-          this.navegarAIncidencias();
-        })
-        .catch(error => {
-          console.error('Error al agregar la incidencia:', error);
-        });
+    // Redirige a la vista de lista de incidencias
+    irAListaSupervisor() {
+      this.$router.push('/lista-supervisor');
     },
-    navegarAIncidencias() {
-      this.$router.push('/incidencias-lista');
+
+    // Redirige a la vista de administración de usuarios
+    irAAdministracion() {
+      this.$router.push('/administracion');
     },
     cerrarSesion() {
       // Eliminar el token y la información del usuario del localStorage
@@ -145,120 +55,76 @@ export default {
 </script>
 
 <style scoped>
-.dashboard-container {
-  display: flex;
-  height: 100vh;
-}
-
-.sidebar {
-  width: 200px;
-  background-color: #b81e1e;
-  display: flex;
-  flex-direction: column; /* Para alinear los botones verticalmente */
-  justify-content: flex-start; /* Alinea los elementos al inicio */
-  align-items: center; /* Centra los elementos horizontalmente */
-  padding-top: 20px; /* Espacio en la parte superior */
-}
-
-.sidebar-button {
-  background-color: #f0f0f0;
-  color: #333;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-bottom: 10px; /* Espacio entre los botones */
-  width: 80%; /* Ajusta el ancho de los botones */
+.supervisor-container {
   text-align: center;
+  padding: 20px;
+  background-color: #f2f2f2;
+  min-height: 100vh;
+  background-image: url('@/assets/supervisor.jpg'); /* Ruta a tu imagen */
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Alinea los elementos desde la parte superior */
 }
 
-.sidebar > button:first-child {
-  margin-top: 100px; /* Espacio desde la parte superior */
-  margin-bottom: 100px; /* Espacio hacia el botón de abajo */
+.supervisor-header {
+  background-color: rgba(184, 30, 30, 0.8); /* Fondo con transparencia para mejor legibilidad */
+  color: white;
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 10px;
 }
 
-.sidebar-button:hover {
-  background-color: #e0e0e0;
+.supervisor-options {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 30px; /* Espacio antes del botón de cerrar sesión */
+}
+
+.option-card {
+  background-color: rgba(184, 30, 30, 0.9); /* Fondo con transparencia */
+  color: white;
+  padding: 30px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 200px;
+}
+
+.option-card:hover {
+  background-color: #8c1414;
+}
+
+h1 {
+  font-size: 2.5em;
+  margin-bottom: 5px;
+}
+
+h3 {
+  font-size: 1.5em;
+  font-weight: bold;
 }
 
 .logout-button {
-  margin-top: auto; /* Empuja el botón hacia la parte inferior */
-  margin-bottom: 200px; /* Espacio en la parte inferior */
-  display: flex; /* Para alinear texto e icono */
-  align-items: center;
-  justify-content: center;
-}
-
-.logout-icon {
-  margin-left: 5px; /* Espacio entre el texto y el icono */
-  font-size: 1.2em; /* Ajusta el tamaño del icono */
-}
-
-.main-content {
-  flex: 1;
-  background-color: #d8d8d8;
-  padding: 20px;
-}
-
-.incidence-form-container {
-  background-color: rgb(183, 184, 194);
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 500px;
-  margin: 20px auto;
-}
-
-.form-group {
-  display: flex;
-  margin-bottom: 15px;
-  align-items: center;
-}
-
-.form-label {
-  width: 150px;
-  text-align: right;
-  padding-right: 10px;
-}
-
-label {
-  display: inline-block;
-  margin-bottom: 0;
-  color: #666;
-}
-
-.form-input {
-  flex: 1;
-}
-
-input,
-select,
-textarea {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.agregar-button {
-  background-color: #b81e1e;
+  background-color: #333;
   color: white;
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  width: 100%;
+  font-size: 1.1em;
+  transition: background-color 0.3s;
 }
 
-.agregar-button:hover {
-  background-color: #45a049;
+.logout-button:hover {
+  background-color: #555;
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #444;
+.logout-icon {
+  margin-left: 5px;
+  font-size: 1.2em;
 }
 </style>
