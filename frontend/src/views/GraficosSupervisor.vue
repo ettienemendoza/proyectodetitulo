@@ -120,7 +120,7 @@ export default {
   console.log('Conteo por tipo:', conteoPorTipo);
   const labels = Object.keys(conteoPorTipo);
   const valores = Object.values(conteoPorTipo);
-  const porcentajes = valores.map(valor => ((valor / totalIncidencias) * 100).toFixed(2) + '%');
+  
 
   this.chartData = {
     labels: labels,
