@@ -1,39 +1,47 @@
-import Chart from 'chart.js/auto';
-
 <template>
-  <div class="graficos-container">
+
+<div class="graficos-container">
     <h2 class="page-title">Gráficos de Estadísticas</h2>
-
-    <div class="filter-card">
-      <h3>Filtrar Reporte</h3>
-      <div class="form-group">
-        <label for="tipoError">Tipo de Error:</label>
-        <select id="tipoError" v-model="filtro.tipoError">
-          <option value="">Todos</option>
-          <option value="Biometría">Biometría</option>
-          <option value="Fallo de preguntas">Fallo de preguntas</option>
-          <option value="Problemas en el sistema">Problemas en el sistema</option>
-          <option value="Sin preguntas">Sin preguntas</option>
-          <option value="Otros">Otros</option>
-        </select>
+    <div class="report-layout">
+      <div class="filter-section">
+        <h3>Filtrar Reporte</h3>
+        <div class="form-group">
+          <label for="tipoError">Tipo de Error:</label>
+          <select id="tipoError" v-model="filtro.tipoError">
+            <option value="">Todos</option>
+            <option value="Biometría">Biometría</option>
+            <option value="Fallo de preguntas">Fallo de preguntas</option>
+            <option value="Problemas en el sistema">Problemas en el sistema</option>
+            <option value="Sin preguntas">Sin preguntas</option>
+            <option value="Otros">Otros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="fechaInicio">Fecha Inicio:</label>
+          <input type="date" id="fechaInicio" v-model="filtro.fechaInicio" />
+        </div>
+        <div class="form-group">
+          <label for="fechaFin">Fecha Fin:</label>
+          <input type="date" id="fechaFin" v-model="filtro.fechaFin" />
+        </div>
+        <button @click="generarReporte" class="generate-report-button">Generar Reporte</button>
+        <button @click="volverAlMenuPrincipal" class="back-to-dashboard-button">Volver al Menú Principal</button>
       </div>
-      <div class="form-group">
-        <label for="fechaInicio">Fecha Inicio:</label>
-        <input type="date" id="fechaInicio" v-model="filtro.fechaInicio" />
-      </div>
-      <div class="form-group">
-        <label for="fechaFin">Fecha Fin:</label>
-        <input type="date" id="fechaFin" v-model="filtro.fechaFin" />
-      </div>
-      <button @click="generarReporte" class="generate-report-button">Generar Reporte</button>
-    </div>
-
-    <div v-if="reporteGenerado" class="report-container">
-      <h3>Resumen del Reporte</h3>
-      <p>{{ resumen }}</p>
-      <div class="chart-card" v-if="chartData">
-        <canvas ref="graficoCanvas" width="400" height="400"></canvas>
-        <button @click="descargarGrafico" class="download-chart-button">Descargar Gráfico</button>
+      <div class="report-section">
+        <div v-if="reporteGenerado">
+          <h3>Resumen del Reporte</h3>
+          <p>{{ resumen }}</p>
+          <div class="chart-card" v-if="chartData">
+            <canvas ref="graficoCanvas" width="400" height="400"></canvas>
+            <button @click="descargarGrafico" class="download-chart-button">Descargar Gráfico</button>
+          </div>
+          <div v-else>
+            <p>No hay datos para mostrar en el gráfico con los filtros seleccionados.</p>
+          </div>
+        </div>
+        <div v-else class="initial-message">
+          <p>Selecciona los filtros y haz clic en "Generar Reporte" para ver las estadísticas.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -103,7 +111,7 @@ export default {
 
       data.forEach(incidencia => {
         const tipo = incidencia.type;
-        conteoPorTipo[tipo] = (conteoPorTipo[tipo] || 0) + 1;
+        conteoPorTipo[`${tipo}`] = (conteoPorTipo[`${tipo}`] || 0) + 1;
         totalIncidencias++;
       });
 
@@ -122,6 +130,11 @@ export default {
             'rgba(255, 206, 86, 0.6)',
             'rgba(75, 192, 192, 0.6)',
             'rgba(153, 102, 255, 0.6)',
+            'rgba(255, 159, 64, 0.6)',
+            'rgba(199, 199, 199, 0.6)',
+            'rgba(128, 0, 128, 0.6)', // Purple
+            'rgba(0, 128, 0, 0.6)',   // Green
+            'rgba(0, 0, 128, 0.6)',   // Navy
           ],
           borderColor: [
             'rgba(255, 99, 132, 1)',
@@ -129,6 +142,11 @@ export default {
             'rgba(255, 206, 86, 1)',
             'rgba(75, 192, 192, 1)',
             'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)',
+            'rgba(199, 199, 199, 1)',
+            'rgba(128, 0, 128, 1)',
+            'rgba(0, 128, 0, 1)',
+            'rgba(0, 0, 128, 1)',
           ],
           borderWidth: 1,
         }]
@@ -137,7 +155,7 @@ export default {
       // Crear el resumen textual
       let resumenTexto = `Se encontraron ${totalIncidencias} incidencias en el período seleccionado. Detalles: `;
       labels.forEach((tipo, index) => {
-        resumenTexto += `${valores[index]} ${tipo} (${porcentajes[index]}), `;
+        resumenTexto += `${valores.length > index ? valores[`${index}`] : 0} ${tipo} (${porcentajes.length > index ? porcentajes[`${index}`] : '0.00%'}) , `;
       });
       this.resumen = resumenTexto.slice(0, -2) + '.';
 
@@ -149,49 +167,53 @@ export default {
         const ctx = canvas.getContext('2d');
         if (this.chartInstance) {
           this.chartInstance.destroy();
+          this.chartInstance = null;
         }
         this.chartInstance = new Chart(ctx, {
           type: 'pie',
           data: this.chartData,
           options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false, // Permite ajustar la proporción
             plugins: {
-                legend: {
-                    position: 'top'
-                },
-                tooltip: {
-                   callbacks: {
-                       label: function(context) {
-                           let label = context.label || '';
-                           if (label) {
-                               label += ': ';
-                           }
-                           if (context.parsed.y !== null) {
-                               label += context.parsed.y + ' (' + context.dataset.data[context.dataIndex] + ')';
-                           }
-                           return label;
-                       }
-                   }
+              legend: {
+                position: 'top'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    let label = context.label || '';
+                    if (label) {
+                      label += ': ';
+                    }
+                    if (context.parsed.y !== null) {
+                      label += context.parsed.y + ' (' + context.dataset.data[`${context.dataIndex}`] + ')';
+                    }
+                    return label;
+                  }
                 }
+              }
             }
           }
         });
       }
     },
     descargarGrafico() {
-        const canvas = this.$refs.graficoCanvas;
-        if (canvas) {
-            const dataURL = canvas.toDataURL('image/png');
-            const a = document.createElement('a');
-            a.href = dataURL;
-            a.download = 'grafico_incidencias.png';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        } else {
-            alert('No hay gráfico para descargar.');
-        }
+      const canvas = this.$refs.graficoCanvas;
+      if (canvas) {
+        const dataURL = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = dataURL;
+        a.download = 'grafico_incidencias.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        alert('No hay gráfico para descargar.');
+      }
+    },
+    volverAlMenuPrincipal() {
+      this.$router.push('/dashboard-supervisor');
     }
   },
   beforeUnmount() {
@@ -220,138 +242,105 @@ export default {
   font-size: 1.8em;
 }
 
-.filter-form-container {
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+.report-layout {
+  display: flex;
+  gap: 20px; /* Espacio entre los dos cuadros */
+  align-items: flex-start; /* Alinea los elementos en la parte superior */
 }
 
-.filter-form-container h3{
-    color: #b81e1e;
-    margin-bottom: 1em;
-    text-align: left;
-    font-size: 1.4em;
+.filter-section {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 300px; /* Ancho fijo para la sección de filtros */
+}
+
+.report-section {
+  flex-grow: 1; /* La sección de reporte ocupa el espacio restante */
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .form-group {
   margin-bottom: 15px;
-  text-align: left;
+
 }
 
-label {
+.form-group label {
   display: block;
-  margin-bottom: 8px;
-  color: #555;
+  margin-bottom: 5px;
+  
   font-weight: bold;
-  font-size: 1em;
+
 }
 
-input[type="date"],
-select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+
+.form-group input,
+.form-group select {
+  width: calc(100% - 12px);
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+ 
   box-sizing: border-box;
-  margin-bottom: 15px;
-  transition: border-color 0.3s ease;
+ 
   font-size: 1em;
 }
 
-input[type="date"]:focus,
-select:focus {
-  outline: none;
-  border-color: #b81e1e;
-  box-shadow: 0 0 5px rgba(184, 30, 30, 0.3);
-}
-
-.generate-report-button {
-  background-color: #b81e1e;
-  color: white;
-  padding: 12px 25px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1.1em;
-  transition: background-color 0.3s ease, transform 0.1s ease;
-  margin-top: 20px;
-}
-
-.generate-report-button:hover {
-  background-color: #a31d1d;
-  transform: scale(1.05);
-}
-
-.generate-report-button:active {
-  transform: translateY(2px);
-}
-
-.report-container {
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: left;
-}
-
-.report-container h3{
-    color: #b81e1e;
-    margin-bottom: 1em;
-    font-size: 1.4em;
-}
-
-.report-container p{
-    font-size: 1.1em;
-    color: #333;
-    margin-bottom: 1em;
-    line-height: 1.5;
-}
-
-
-.chart-container {
-  margin-top: 20px;
-  position: relative;
-  width: 100%;
-  max-width: 600px;
-  margin: 20px auto;
-}
-
+.generate-report-button,
+.back-to-dashboard-button,
 .download-chart-button {
   background-color: #b81e1e;
   color: white;
-  padding: 12px 25px;
+  padding: 10px 15px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1.1em;
-  transition: background-color 0.3s ease, transform 0.1s ease;
-  margin-top: 20px;
-  display: block;
-  text-align: center;
-  margin: 20px auto 0 auto;
-  width: 200px;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+  display: block; /* Para que los botones ocupen el ancho completo */
+  width: 100%;
+  box-sizing: border-box;
 }
 
+.generate-report-button:hover,
+.back-to-dashboard-button:hover,
 .download-chart-button:hover {
-  background-color: #a31d1d;
-  transform: scale(1.05);
+  background-color: #8c1717;
 }
 
-.download-chart-button:active {
-  transform: translateY(2px);
+.back-to-dashboard-button {
+  background-color: #333; /* Un color diferente para distinguirlo */
 }
 
-@media (max-width: 768px) {
-  .filter-form-container,
-  .report-container {
-    width: 100%;
-    margin-left: 0;
-  }
+.back-to-dashboard-button:hover {
+  background-color: #555;
+}
 
-  .chart-container {
-    max-width: 100%;
-  }
+.chart-card {
+  margin-top: 20px;
+  border: 1px solid #eee;
+  padding: 15px;
+  border-radius: 5px;
+
+  text-align: center;
+}
+
+.chart-card canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+.download-chart-button {
+  margin-top: 15px;
+}
+
+.initial-message {
+  color: #777;
+  font-style: italic;
 }
 </style>
