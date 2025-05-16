@@ -108,14 +108,8 @@ export default {
     }
     return;
   }
-  const conteoPorTipo = {};
-  //let totalIncidencias = 0;
-
-  data.forEach(incidencia => {
-    const tipo = incidencia.type;
-    conteoPorTipo[`${tipo}`] = (conteoPorTipo[`${tipo}`] || 0) + 1;
-    totalIncidencias++;
-  });
+  
+  ;
 
   console.log('Conteo por tipo:', conteoPorTipo);
   const labels = Object.keys(conteoPorTipo);
