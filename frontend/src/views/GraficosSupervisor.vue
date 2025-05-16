@@ -98,7 +98,7 @@ export default {
         alert('Error al generar el reporte');
       }
     },
-    procesarDatos(data) {
+   procesarDatos(data) {
   console.log('Datos recibidos para procesar:', data);
   if (!data || data.length === 0) {
     this.resumen = 'No se encontraron incidencias con los filtros seleccionados.';
@@ -153,11 +153,18 @@ export default {
         'rgba(0, 0, 128, 1)',
       ],
       borderWidth: 1,
-      porcentajes: porcentajes // <---- PASA LOS PORCENTAJES AL DATASET
+      porcentajes: porcentajes
     }]
   };
 
   console.log('Datos del gráfico (this.chartData):', this.chartData);
+
+  // Crear el resumen textual con conteo total y por tipo
+  let resumenTexto = `Se encontraron ${totalIncidencias} incidencias en el período seleccionado. Detalles: `;
+  labels.forEach((tipo, index) => {
+    resumenTexto += `${tipo}: ${conteoPorTipo[tipo]} (${porcentajes[index]}), `;
+  });
+  this.resumen = resumenTexto.slice(0, -2) + '.';
 
   this.$nextTick(() => {
     this.renderChart();
@@ -202,24 +209,23 @@ export default {
                 return label;
               }
             }
+            }
           }
         }
-      }
-    });
-    console.log('Instancia del gráfico:', this.chartInstance);
+      });
+      console.log('Instancia del gráfico:', this.chartInstance);
+    }
+  },
+  volverAlMenuPrincipal() {
+    this.$router.push('/dashboard-supervisor');
   }
-},
-volverAlMenuPrincipal() {
-  this.$router.push('/dashboard-supervisor');
-}
 },
 beforeUnmount() {
   if (this.chartInstance) {
     this.chartInstance.destroy();
   }
 }
-}
-;
+};
 
 </script>
 
@@ -320,11 +326,14 @@ beforeUnmount() {
   padding: 15px;
   border-radius: 5px;
   text-align: center;
+  max-width: 100%; /* Asegura que no sea más ancho que su contenedor */
+  overflow: auto; /* Permite scroll si el contenido es demasiado grande (por precaución) */
 }
 
 .chart-card canvas {
-  max-width: 100%;
-  height: auto;
+  width: 100% !important; /* Hace que el canvas ocupe el ancho del contenedor */
+  height: auto !important; /* Mantiene la proporción */
+  max-height: 400px; /* O ajusta la altura máxima según lo necesites */
 }
 
 .download-chart-button {
