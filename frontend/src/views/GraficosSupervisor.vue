@@ -117,6 +117,7 @@ export default {
         totalIncidencias++;
       });
 
+      console.log('Conteo por tipo:', conteoPorTipo); // <---- AGREGAR ESTE LOG
       const labels = Object.keys(conteoPorTipo);
       const valores = Object.values(conteoPorTipo);
       const porcentajes = valores.map(valor => ((valor / totalIncidencias) * 100).toFixed(2) + '%');
@@ -154,6 +155,8 @@ export default {
         }]
       };
 
+      console.log('Datos del gráfico (this.chartData):', this.chartData); // <---- AGREGAR ESTE LOG
+
       // Crear el resumen textual
       let resumenTexto = `Se encontraron ${totalIncidencias} incidencias en el período seleccionado. Detalles: `;
       labels.forEach((tipo, index) => {
@@ -165,8 +168,10 @@ export default {
     },
     renderChart() {
       const canvas = this.$refs.graficoCanvas;
+      console.log('Elemento canvas:', canvas); // <---- AGREGAR ESTE LOG
       if (canvas && this.chartData) {
         const ctx = canvas.getContext('2d');
+        console.log('Contexto del canvas:', ctx); // <---- AGREGAR ESTE LOG
         if (this.chartInstance) {
           this.chartInstance.destroy();
           this.chartInstance = null;
@@ -177,7 +182,7 @@ export default {
           options: {
             responsive: true,
             maintainAspectRatio: false, // Permite ajustar la proporción
-            plugins:{
+            plugins: {
               legend: {
                 position: 'top'
               },
@@ -198,8 +203,10 @@ export default {
             }
           }
         });
+        console.log('Instancia del gráfico:', this.chartInstance); // <---- AGREGAR ESTE LOG
       }
     },
+      
     descargarGrafico() {
       const canvas = this.$refs.graficoCanvas;
       if (canvas) {
@@ -226,115 +233,84 @@ export default {
 };
 </script>
 <style scoped>
-.graficos-container {
+.supervisor-container {
+  text-align: center;
   padding: 20px;
   background-color: #f2f2f2;
   min-height: 100vh;
-  font-family: Arial, sans-serif;
-}
-
-.page-title {
-  background-color: #b81e1e;
-  color: white;
-  padding: 10px;
-  margin-bottom: 20px;
-  text-align: center;
-  border-radius: 5px;
-  font-size: 1.8em;
-}
-
-.report-layout {
+  background-image: url('@/assets/supervisor.jpg'); /* Ruta a tu imagen */
+  background-size: cover;
+  background-position: center top; /* Centra la imagen desde la parte superior */
   display: flex;
-  gap: 20px; /* Espacio entre los dos cuadros */
-  align-items: flex-start; /* Alinea los elementos en la parte superior */
+  flex-direction: column;
+  align-items: stretch; /* Estira los elementos horizontalmente */
+  justify-content: flex-start; /* Alinea los elementos desde la parte superior */
+  filter: grayscale(100%); /* Aplica un filtro de escala de grises */
 }
 
-.filter-section {
-  background-color: white;
+.supervisor-header {
+  background-color: #b81e1e; /* Color de fondo sólido */
+  color: white;
   padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 300px; /* Ancho fijo para la sección de filtros */
+  margin-bottom: 30px;
+  text-align: center; /* Centra el texto dentro del encabezado */
 }
 
-.report-section {
-  flex-grow: 1; /* La sección de reporte ocupa el espacio restante */
-  background-color: white;
-  padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.supervisor-header h1,
+.supervisor-header h3 {
+  background-color: transparent; /* Asegura que el fondo del texto no sea transparente */
+  padding: 5px 0; /* Añade un poco de espacio alrededor del texto */
+  margin: 0; /* Elimina los márgenes predeterminados */
 }
 
-.form-group {
-  margin-bottom: 15px;
+.supervisor-options {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 30px; /* Espacio antes del botón de cerrar sesión */
 }
 
-.form-group label {
-  display: block;
+.option-card {
+  background-color: rgba(184, 30, 30, 0.9); /* Fondo con transparencia */
+  color: white;
+  padding: 30px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 200px;
+}
+
+.option-card:hover {
+  background-color: #8c1414;
+}
+
+h1 {
+  font-size: 2.5em;
   margin-bottom: 5px;
+}
+
+h3 {
+  font-size: 1.5em;
   font-weight: bold;
 }
 
-.form-group input,
-.form-group select {
-  width: calc(100% - 12px);
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-size: 1em;
-}
-
-.generate-report-button,
-.back-to-dashboard-button,
-.download-chart-button {
-  background-color: #b81e1e;
+.logout-button {
+  background-color: #333;
   color: white;
-  padding: 10px 15px;
+  padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1em;
-  transition: background-color 0.3s ease;
-  margin-top: 10px;
-  display: block; /* Para que los botones ocupen el ancho completo */
-  width: 100%;
-  box-sizing: border-box;
+  font-size: 1.1em;
+  transition: background-color 0.3s;
 }
 
-.generate-report-button:hover,
-.back-to-dashboard-button:hover,
-.download-chart-button:hover {
-  background-color: #8c1717;
-}
-
-.back-to-dashboard-button {
-  background-color: #333; /* Un color diferente para distinguirlo */
-}
-
-.back-to-dashboard-button:hover {
+.logout-button:hover {
   background-color: #555;
 }
 
-.chart-card {
-  margin-top: 20px;
-  border: 1px solid #eee;
-  padding: 15px;
-  border-radius: 5px;
-  text-align: center;
-}
-
-.chart-card canvas {
-  max-width: 100%;
-  height: auto;
-}
-
-.download-chart-button {
-  margin-top: 15px;
-}
-
-.initial-message {
-  color: #777;
-  font-style: italic;
+.logout-icon {
+  margin-left: 5px;
+  font-size: 1.2em;
 }
 </style>
