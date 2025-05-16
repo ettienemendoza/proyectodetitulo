@@ -191,9 +191,13 @@ export default {
                     }
                     if (context.parsed.y !== null) {
                       label += context.parsed.y + ' (' + context.dataset.data[`${context.dataIndex}`] + ')';
+                      // Añade el porcentaje si el índice es válido
+                      if (this.porcentajes && this.porcentajes[`${context.dataIndex}`]) {
+                        label += ' - ' + this.porcentajes[`${context.dataIndex}`];
+                      }
                     }
                     return label;
-                  }
+                  }.bind(this)
                 }
               }
             }
