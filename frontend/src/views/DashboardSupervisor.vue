@@ -56,9 +56,7 @@ export default {
 </script>
 
 <style scoped>
-
 .supervisor-container {
-  position: relative; /* Necesario para posicionar el overlay */
   text-align: center;
   padding: 20px;
   background-color: #f2f2f2;
@@ -67,6 +65,7 @@ export default {
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
+  /* Eliminamos la imagen de fondo aquí */
 }
 
 .background-image-overlay {
@@ -81,8 +80,6 @@ export default {
   filter: grayscale(100%); /* Aplica el filtro solo a la capa de la imagen */
   z-index: -1; /* Envía la capa de la imagen detrás del contenido */
 }
-
-
 
 .supervisor-header {
   background-color: #b81e1e; /* Color de fondo rojo sólido */
