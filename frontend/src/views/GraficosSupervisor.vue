@@ -32,7 +32,14 @@
           <p>{{ resumen }}</p>
           <div class="chart-card" v-if="chartData">
             <canvas ref="graficoCanvas" width="400" height="400"></canvas>
-            <button @click="descargarGrafico" class="download-chart-button">Descargar Gráfico</button>
+            // ...existing code...
+            <button 
+                @click="descargarGrafico" 
+                class="download-chart-button"
+                :disabled="!chartInstance"
+>                Descargar Gráfico
+            </button>
+// ...existing code...
           </div>
           <div v-else>
             <p>No hay datos para mostrar en el gráfico con los filtros seleccionados.</p>
@@ -226,19 +233,20 @@ beforeUnmount() {
   }
 },
  descargarGrafico() {
-      const canvas = this.$refs.graficoCanvas; // Obtén la referencia al canvas aquí
-      if (canvas) {
-        const dataURL = canvas.toDataURL('image/png');
-        const a = document.createElement('a');
-        a.href = dataURL;
-        a.download = 'grafico_incidencias.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      } else {
-        alert('No hay gráfico para descargar.');
-      }
-    },
+  const canvas = this.$refs.graficoCanvas;
+  console.log('Canvas para descargar:', canvas);
+  if (canvas) {
+    const dataURL = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = dataURL;
+    a.download = 'grafico_incidencias.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } else {
+    alert('No hay gráfico para descargar.');
+  }
+},
 };
 
 </script>

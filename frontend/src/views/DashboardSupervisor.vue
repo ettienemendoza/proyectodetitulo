@@ -82,17 +82,15 @@ export default {
   z-index: -1; /* Envía la capa de la imagen detrás del contenido */
 }
 
-.content {
-  position: relative; /* Asegura que el contenido esté encima del overlay */
-  z-index: 0;
-}
+
 
 .supervisor-header {
-  background-color: rgba(184, 30, 30, 0.8);
+  background-color: #b81e1e; /* Color de fondo rojo sólido */
   color: white;
   padding: 20px;
   margin-bottom: 30px;
   text-align: center;
+  z-index: 0; /* Asegura que esté encima del overlay */
 }
 
 .supervisor-header h1,
@@ -107,16 +105,18 @@ export default {
   justify-content: center;
   gap: 20px;
   margin-bottom: 30px;
+  z-index: 0; /* Asegura que esté encima del overlay */
 }
 
 .option-card {
-  background-color: rgba(184, 30, 30, 0.9);
+  background-color: #b81e1e; /* Color de fondo rojo sólido */
   color: white;
   padding: 30px;
   border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.3s;
   width: 200px;
+  z-index: 0; /* Asegura que esté encima del overlay */
 }
 
 .option-card:hover {
@@ -142,6 +142,7 @@ h3 {
   cursor: pointer;
   font-size: 1.1em;
   transition: background-color 0.3s;
+  z-index: 0; /* Asegura que esté encima del overlay */
 }
 
 .logout-button:hover {
