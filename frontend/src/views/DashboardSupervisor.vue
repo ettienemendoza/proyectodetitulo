@@ -1,26 +1,27 @@
 <template>
   <div class="supervisor-container">
-    <div class="supervisor-header">
-      <h1>Supervisor</h1>
-      <h3>¿Qué deseas hacer?</h3>
+    <div class="background-image-overlay"></div>
+    <div class="content">
+      <div class="supervisor-header">
+        <h1>Supervisor</h1>
+        <h3>¿Qué deseas hacer?</h3>
+      </div>
+      <div class="supervisor-options">
+        <div class="option-card" @click="irAGrafico">
+          <h3>Gráfico de Estadísticas</h3>
+        </div>
+        <div class="option-card" @click="irAListaSupervisor">
+          <h3>Lista de Incidencias</h3>
+        </div>
+        <div class="option-card" @click="irAAdministracion">
+          <h3>Administración</h3>
+        </div>
+      </div>
+      <button class="logout-button" @click="cerrarSesion">
+        CERRAR SESIÓN
+        <span class="logout-icon">🚪</span>
+      </button>
     </div>
-    <div class="supervisor-options">
-      <div class="option-card" @click="irAGrafico">
-        <h3>Gráfico de Estadísticas</h3>
-      </div>
-
-      <div class="option-card" @click="irAListaSupervisor">
-        <h3>Lista de Incidencias</h3>
-      </div>
-
-      <div class="option-card" @click="irAAdministracion">
-        <h3>Administración</h3>
-      </div>
-    </div>
-    <button class="logout-button" @click="cerrarSesion">
-      CERRAR SESIÓN
-      <span class="logout-icon">🚪</span>
-    </button>
   </div>
 </template>
 
@@ -57,44 +58,59 @@ export default {
 <style scoped>
 
 .supervisor-container {
+  position: relative; /* Necesario para posicionar el overlay */
   text-align: center;
   padding: 20px;
   background-color: #f2f2f2;
   min-height: 100vh;
-  background-image: url('@/assets/supervisor.jpg'); /* Ruta a tu imagen */
-  background-size: cover;
-  background-position: center top; /* Centra la imagen desde la parte superior */
   display: flex;
   flex-direction: column;
-  align-items: stretch; /* Estira los elementos horizontalmente */
-  justify-content: flex-start; /* Alinea los elementos desde la parte superior */
-  filter: grayscale(100%); /* Aplica un filtro de escala de grises */
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.background-image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('@/assets/supervisor.jpg'); /* Ruta a tu imagen */
+  background-size: cover;
+  background-position: center top;
+  filter: grayscale(100%); /* Aplica el filtro solo a la capa de la imagen */
+  z-index: -1; /* Envía la capa de la imagen detrás del contenido */
+}
+
+.content {
+  position: relative; /* Asegura que el contenido esté encima del overlay */
+  z-index: 0;
 }
 
 .supervisor-header {
-  background-color: #b81e1e; /* Color de fondo sólido */
+  background-color: rgba(184, 30, 30, 0.8);
   color: white;
   padding: 20px;
   margin-bottom: 30px;
-  text-align: center; /* Centra el texto dentro del encabezado */
+  text-align: center;
 }
 
 .supervisor-header h1,
 .supervisor-header h3 {
-  background-color: transparent; /* Asegura que el fondo del texto no sea transparente */
-  padding: 5px 0; /* Añade un poco de espacio alrededor del texto */
-  margin: 0; /* Elimina los márgenes predeterminados */
+  background-color: transparent;
+  padding: 5px 0;
+  margin: 0;
 }
 
 .supervisor-options {
   display: flex;
   justify-content: center;
   gap: 20px;
-  margin-bottom: 30px; /* Espacio antes del botón de cerrar sesión */
+  margin-bottom: 30px;
 }
 
 .option-card {
-  background-color: rgba(184, 30, 30, 0.9); /* Fondo con transparencia */
+  background-color: rgba(184, 30, 30, 0.9);
   color: white;
   padding: 30px;
   border-radius: 10px;

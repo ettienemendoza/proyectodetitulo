@@ -224,7 +224,21 @@ beforeUnmount() {
   if (this.chartInstance) {
     this.chartInstance.destroy();
   }
-}
+},
+ descargarGrafico() {
+      const canvas = this.$refs.graficoCanvas; // Obtén la referencia al canvas aquí
+      if (canvas) {
+        const dataURL = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = dataURL;
+        a.download = 'grafico_incidencias.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        alert('No hay gráfico para descargar.');
+      }
+    },
 };
 
 </script>
