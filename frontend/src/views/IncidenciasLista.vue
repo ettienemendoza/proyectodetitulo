@@ -91,7 +91,7 @@
 </template>
 
 <script>
-// incidenciaslista.vue
+
 import axios from 'axios';
 
 export default {
@@ -119,41 +119,108 @@ export default {
         const tipoMatch = !this.filtro.type || incidencia.type === this.filtro.type;
         const estadoMatch = !this.filtro.estado || incidencia.estado === this.filtro.estado;
         const fechaInicioMatch = !this.filtro.fechaInicio || new Date(incidencia.createdAt) >= new Date(this.filtro.fechaInicio);
-        const fechaFinMatch = !this.filtro.fechaFin || new Date(incidencia.createdAt) <= new Date(this)});
+        const fechaFinMatch = !this.filtro.fechaFin || new Date(incidencia.createdAt) <= new Date(this.filtro.fechaFin);
+        return tipoMatch && estadoMatch && fechaInicioMatch && fechaFinMatch;
+      });
     },
-    async generarReporteErroresComunes() { // Agrega 'async' aquí
-    const erroresComunes = this.incidenciasFiltradas.reduce((acc, incidencia) => {
-      acc[incidencia.type] = (acc[incidencia.type] || 0) + 1;
-      return acc;
-    }, {});
+  },
+  methods: {
+    obtenerIncidencias() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Token no proporcionado');
+        alert("Por favor inicie sesión");
+        this.$router.push('/');
+        return;
+      }
 
-    const reporteErrores = Object.entries(erroresComunes)
-      .map(([error, cantidad]) => ({ error, cantidad }))
-      .sort((a, b) => b.cantidad - a.cantidad);
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: this.filtro,
+      };
 
-    this.reporteErroresComunes = reporteErrores;
-    this.reporteGenerado = true;
-
-    // Enviar el reporte al backend para guardar en estadísticas
-    const token = localStorage.getItem('token');
-    if (token) {
+      axios.get('https://proyectodetitulo.onrender.com/api/incidencias', config)
+        .then(response => {
+          this.incidencias = response.data;
+          this.reporteErroresComunes = []; // Limpiar el reporte al obtener nuevas incidencias
+          this.reporteGenerado = false;
+        })
+        .catch(error => {
+          console.error('Error al cargar las incidencias:', error);
+          alert('Error al cargar las incidencias');
+        });
+    },
+    navegarAFormulario() {
+      if (this.usuario.rol === 'supervisor') {
+        this.$router.push('/dashboard-supervisor');
+      } else {
+        this.$router.push('/dashboard-ejecutivo');
+      }
+    },
+    verDetalleIncidencia(id) {
+      this.$router.push(`/incidencias/${id}`);
+    },
+    async borrarIncidencia(id) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Token no proporcionado');
+        alert('Por favor, inicie sesión');
+        this.$router.push('/');
+        return;
+      }
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       };
-      try {
-        const response = await axios.post('https://proyectodetitulo.onrender.com/api/guardar-reporte-errores', { reporteErrores }, config);
-        console.log('Reporte de errores guardado en el backend:', response.data.message);
-        // Puedes mostrar un mensaje al usuario si lo deseas
-      } catch (error) {
-        console.error('Error al guardar el reporte de errores en el backend:', error);
-        alert('Error al guardar el reporte de errores.');
+
+      if (confirm('¿Estás seguro de que deseas eliminar esta incidencia?')) {
+        try {
+          await axios.delete(`https://proyectodetitulo.onrender.com/api/incidencias/${id}`, config);
+          console.log('Incidencia eliminada');
+          alert('Incidencia eliminada exitosamente');
+          this.obtenerIncidencias(); // Recargar la lista después de eliminar
+        } catch (error) {
+          console.error('Error al eliminar la incidencia:', error);
+          alert('Error al eliminar la incidencia');
+        }
       }
-    } else {
-      console.error('Token no encontrado, no se pudo guardar el reporte de errores.');
-    }
-  },
+    },
+    async generarReporteErroresComunes() { // Ahora es un método async
+      const erroresComunes = this.incidenciasFiltradas.reduce((acc, incidencia) => {
+        acc[incidencia.type] = (acc[incidencia.type] || 0) + 1;
+        return acc;
+      }, {});
+
+      const reporteErrores = Object.entries(erroresComunes)
+        .map(([error, cantidad]) => ({ error, cantidad }))
+        .sort((a, b) => b.cantidad - a.cantidad);
+
+      this.reporteErroresComunes = reporteErrores;
+      this.reporteGenerado = true;
+
+      // Enviar el reporte al backend para guardar en estadísticas
+      const token = localStorage.getItem('token');
+      if (token) {
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        try {
+          const response = await axios.post('https://proyectodetitulo.onrender.com/api/guardar-reporte-errores', { reporteErrores }, config);
+          console.log('Reporte de errores guardado en el backend:', response.data.message);
+          // Puedes mostrar un mensaje al usuario si lo deseas
+        } catch (error) {
+          console.error('Error al guardar el reporte de errores en el backend:', error);
+          alert('Error al guardar el reporte de errores.');
+        }
+      } else {
+        console.error('Token no encontrado, no se pudo guardar el reporte de errores.');
+      }
+    },
   },
 };
 </script>
