@@ -121,39 +121,39 @@ export default {
         const fechaInicioMatch = !this.filtro.fechaInicio || new Date(incidencia.createdAt) >= new Date(this.filtro.fechaInicio);
         const fechaFinMatch = !this.filtro.fechaFin || new Date(incidencia.createdAt) <= new Date(this)});
     },
-    generarReporteErroresComunes() {
-      const erroresComunes = this.incidenciasFiltradas.reduce((acc, incidencia) => {
-        acc[incidencia.type] = (acc[incidencia.type] || 0) + 1;
-        return acc;
-      }, {});
+    async generarReporteErroresComunes() { // Agrega 'async' aquí
+    const erroresComunes = this.incidenciasFiltradas.reduce((acc, incidencia) => {
+      acc[incidencia.type] = (acc[incidencia.type] || 0) + 1;
+      return acc;
+    }, {});
 
-      const reporteErrores = Object.entries(erroresComunes)
-        .map(([error, cantidad]) => ({ error, cantidad }))
-        .sort((a, b) => b.cantidad - a.cantidad);
+    const reporteErrores = Object.entries(erroresComunes)
+      .map(([error, cantidad]) => ({ error, cantidad }))
+      .sort((a, b) => b.cantidad - a.cantidad);
 
-      this.reporteErroresComunes = reporteErrores;
-      this.reporteGenerado = true;
+    this.reporteErroresComunes = reporteErrores;
+    this.reporteGenerado = true;
 
-      // Enviar el reporte al backend para guardar en estadísticas
-      const token = localStorage.getItem('token');
-      if (token) {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-        try {
-          const response = await axios.post('https://proyectodetitulo.onrender.com/api/guardar-reporte-errores', { reporteErrores }, config);
-          console.log('Reporte de errores guardado en el backend:', response.data.message);
-          // Puedes mostrar un mensaje al usuario si lo deseas
-        } catch (error) {
-          console.error('Error al guardar el reporte de errores en el backend:', error);
-          alert('Error al guardar el reporte de errores.');
-        }
-      } else {
-        console.error('Token no encontrado, no se pudo guardar el reporte de errores.');
+    // Enviar el reporte al backend para guardar en estadísticas
+    const token = localStorage.getItem('token');
+    if (token) {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      try {
+        const response = await axios.post('https://proyectodetitulo.onrender.com/api/guardar-reporte-errores', { reporteErrores }, config);
+        console.log('Reporte de errores guardado en el backend:', response.data.message);
+        // Puedes mostrar un mensaje al usuario si lo deseas
+      } catch (error) {
+        console.error('Error al guardar el reporte de errores en el backend:', error);
+        alert('Error al guardar el reporte de errores.');
       }
-    },
+    } else {
+      console.error('Token no encontrado, no se pudo guardar el reporte de errores.');
+    }
+  },
   },
 };
 </script>
