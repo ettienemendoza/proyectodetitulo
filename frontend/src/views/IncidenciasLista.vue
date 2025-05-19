@@ -51,12 +51,12 @@ export default {
   data() {
     return {
       incidencias: [],
-      usuario: {}, // Para almacenar la información del usuario
+      usuario: {},
     };
   },
   mounted() {
     this.obtenerIncidencias();
-    this.usuario = JSON.parse(localStorage.getItem('usuario')) || {}; // Obtener el rol del usuario
+    this.usuario = JSON.parse(localStorage.getItem('usuario')) || {};
   },
   methods: {
     obtenerIncidencias() {
@@ -111,7 +111,7 @@ export default {
           await axios.delete(`https://proyectodetitulo.onrender.com/api/incidencias/${id}`, config);
           console.log('Incidencia eliminada');
           alert('Incidencia eliminada exitosamente');
-          this.obtenerIncidencias(); // Recargar la lista después de eliminar
+          this.obtenerIncidencias();
         } catch (error) {
           console.error('Error al eliminar la incidencia:', error);
           alert('Error al eliminar la incidencia');

@@ -100,9 +100,9 @@ export default {
         alert('Error al generar el reporte');
       }
     },
-    procesarDatos(data) {
+    procesarDatos(data) { // <-- Corregido para recibir el objeto completo
       console.log('Datos recibidos para procesar:', data);
-      if (!data || data.length === 0) {
+      if (!data || !data.incidencias || data.incidencias.length === 0) { // <-- Accedemos a data.incidencias
         this.resumen = 'No se encontraron incidencias con los filtros seleccionados.';
         this.chartData = null;
         if (this.chartInstance) {
@@ -114,7 +114,7 @@ export default {
       const conteoPorTipo = {};
       let totalIncidencias = 0;
 
-      data.forEach(incidencia => {
+      data.incidencias.forEach(incidencia => { // <-- Iteramos sobre data.incidencias
         const tipo = incidencia.type;
         conteoPorTipo[`${tipo}`] = (conteoPorTipo[`${tipo}`] || 0) + 1;
         totalIncidencias++;
@@ -138,9 +138,9 @@ export default {
             'rgba(153, 102, 255, 0.6)',
             'rgba(255, 159, 64, 0.6)',
             'rgba(199, 199, 199, 0.6)',
-            'rgba(128, 0, 128, 0.6)', // Purple
-            'rgba(0, 128, 0, 0.6)',   // Green
-            'rgba(0, 0, 128, 0.6)',   // Navy
+            'rgba(128, 0, 128, 0.6)',
+            'rgba(0, 128, 0, 0.6)',
+            'rgba(0, 0, 128, 0.6)',
           ],
           borderColor: [
             'rgba(255, 99, 132, 1)',
@@ -161,7 +161,6 @@ export default {
 
       console.log('Datos del gráfico (this.chartData):', this.chartData);
 
-      // Crear el resumen textual con conteo total y por tipo
       let resumenTexto = `Se encontraron ${totalIncidencias} incidencias en el período seleccionado. Detalles: `;
       labels.forEach((tipo, index) => {
         resumenTexto += `${tipo}: ${conteoPorTipo[tipo]} (${porcentajes[index]}), `;
@@ -203,7 +202,6 @@ export default {
                     }
                     if (context.parsed.y !== null) {
                       label += context.parsed.y + ' (' + context.dataset.data[`${context.dataIndex}`] + ')';
-                      // Accede a los porcentajes desde el dataset
                       if (context.dataset.porcentajes && context.dataset.porcentajes[`${context.dataIndex}`]) {
                         label += ' - ' + context.dataset.porcentajes[`${context.dataIndex}`];
                       }
@@ -268,9 +266,7 @@ export default {
 .report-layout {
   display: flex;
   gap: 20px;
-  /* Espacio entre los dos cuadros */
   align-items: flex-start;
-  /* Alinea los elementos en la parte superior */
 }
 
 .filter-section {
@@ -279,12 +275,10 @@ export default {
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 300px;
-  /* Ancho fijo para la sección de filtros */
 }
 
 .report-section {
   flex-grow: 1;
-  /* La sección de reporte ocupa el espacio restante */
   background-color: white;
   padding: 20px;
   border-radius: 5px;
@@ -324,7 +318,6 @@ export default {
   transition: background-color 0.3s ease;
   margin-top: 10px;
   display: block;
-  /* Para que los botones ocupen el ancho completo */
   width: 100%;
   box-sizing: border-box;
 }
@@ -337,7 +330,6 @@ export default {
 
 .back-to-dashboard-button {
   background-color: #333;
-  /* Un color diferente para distinguirlo */
 }
 
 .back-to-dashboard-button:hover {
@@ -351,18 +343,13 @@ export default {
   border-radius: 5px;
   text-align: center;
   max-width: 100%;
-  /* Asegura que no sea más ancho que su contenedor */
   overflow: auto;
-  /* Permite scroll si el contenido es demasiado grande (por precaución) */
 }
 
 .chart-card canvas {
   width: 100% !important;
-  /* Hace que el canvas ocupe el ancho del contenedor */
   height: auto !important;
-  /* Mantiene la proporción */
   max-height: 400px;
-  /* O ajusta la altura máxima según lo necesites */
 }
 
 .download-chart-button {

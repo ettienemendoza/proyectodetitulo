@@ -78,13 +78,12 @@ export default {
         updatedAt: new Date()
       },
       mostrarOtroTipoError: false,
-      usuario: {}, // Aquí guardamos los datos del usuario logueado
+      usuario: {},
     };
   },
   mounted() {
-    // Asignamos el nombre del usuario logueado al nombre ejecutivo
-    this.usuario = JSON.parse(localStorage.getItem('usuario')) || {}; // Recuperamos el usuario logueado desde localStorage
-    this.incidencia.executiveName = this.usuario.nombre || ''; // Asignamos el nombre del usuario logueado automáticamente
+    this.usuario = JSON.parse(localStorage.getItem('usuario')) || {};
+    this.incidencia.executiveName = this.usuario.nombre || '';
   },
   methods: {
     mostrarInputOtros() {
@@ -94,27 +93,22 @@ export default {
       }
     },
     guardarIncidencia() {
-      // Asignamos los valores de fecha y hora
       this.incidencia.fecha = new Date().toLocaleDateString();
       this.incidencia.hora = new Date().toLocaleTimeString();
 
-      // Obtener el token del localStorage
       const token = localStorage.getItem('token');
 
-      // Verificar que todos los campos estén completos antes de enviar
-      if (!this.incidencia.type || !this.incidencia.description || !this.incidencia.executiveName) {
-        alert('Por favor complete todos los campos');
-        return;
-      }
-
-      // Configurar los headers para enviar el token
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       };
 
-      // Enviar la incidencia al backend
+      if (!this.incidencia.type || !this.incidencia.description || !this.incidencia.executiveName) {
+        alert('Por favor complete todos los campos');
+        return;
+      }
+
       axios.post('https://proyectodetitulo.onrender.com/api/incidencias', this.incidencia, config)
         .then(response => {
           console.log('Incidencia registrada:', response);
@@ -129,12 +123,10 @@ export default {
       this.$router.push('/incidencias-lista');
     },
     cerrarSesion() {
-      // Eliminar el token y la información del usuario del localStorage
       localStorage.removeItem('token');
       localStorage.removeItem('rol');
       localStorage.removeItem('usuario');
 
-      // Redirigir al usuario a la página de inicio de sesión (asumiendo que la ruta es '/')
       this.$router.push('/');
     }
   }
@@ -153,13 +145,9 @@ export default {
   background-color: #b81e1e;
   display: flex;
   flex-direction: column;
-  /* Para alinear los botones verticalmente */
   justify-content: flex-start;
-  /* Alinea los elementos al inicio */
   align-items: center;
-  /* Centra los elementos horizontalmente */
   padding-top: 20px;
-  /* Espacio en la parte superior */
 }
 
 .sidebar-button {
@@ -170,17 +158,13 @@ export default {
   border-radius: 5px;
   cursor: pointer;
   margin-bottom: 10px;
-  /* Espacio entre los botones */
   width: 80%;
-  /* Ajusta el ancho de los botones */
   text-align: center;
 }
 
 .sidebar>button:first-child {
   margin-top: 100px;
-  /* Espacio desde la parte superior */
   margin-bottom: 100px;
-  /* Espacio hacia el botón de abajo */
 }
 
 .sidebar-button:hover {
@@ -189,20 +173,15 @@ export default {
 
 .logout-button {
   margin-top: auto;
-  /* Empuja el botón hacia la parte inferior */
   margin-bottom: 200px;
-  /* Espacio en la parte inferior */
   display: flex;
-  /* Para alinear texto e icono */
   align-items: center;
   justify-content: center;
 }
 
 .logout-icon {
   margin-left: 5px;
-  /* Espacio entre el texto y el icono */
   font-size: 1.2em;
-  /* Ajusta el tamaño del icono */
 }
 
 .main-content {

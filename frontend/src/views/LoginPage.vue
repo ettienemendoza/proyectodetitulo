@@ -30,7 +30,7 @@ export default {
     return {
       usuario: '',
       contrasena: '',
-      email: '' // Agregamos el email para la recuperación de contraseña
+      email: ''
     };
   },
   methods: {
@@ -53,7 +53,7 @@ export default {
 
           localStorage.setItem('token', response.data.token);
           localStorage.setItem('rol', response.data.rol);
-          localStorage.setItem('usuario', JSON.stringify({ nombre: this.usuario, email: response.data.email })); // Guardamos el email
+          localStorage.setItem('usuario', JSON.stringify({ nombre: this.usuario, email: response.data.email }));
           console.log('Token en localStorage:', localStorage.getItem('token'));
           console.log('Rol en localStorage:', localStorage.getItem('rol'));
 
@@ -74,7 +74,7 @@ export default {
         alert('Usuario o contraseña incorrectos');
       }
     },
-    async resetPassword() { // Método para recuperar la contraseña
+    async resetPassword() {
       const email = prompt('Por favor, ingresa tu correo electrónico:');
       if (!email) {
         alert('Debes ingresar un correo electrónico para recuperar tu contraseña.');
@@ -94,7 +94,7 @@ export default {
 </script>
 
 <style scoped>
-
+/* loginpage.vue */
 /* Estilo del formulario de login */
 .login-container {
   background-image: url('@/assets/edificio.jpg');
@@ -171,7 +171,6 @@ input {
 
 .btn-reset-password {
   background-color: #5bc0de;
-  /* Un color diferente para el botón de reset */
   color: white;
   padding: 10px 20px;
   width: 100%;
@@ -180,11 +179,9 @@ input {
   cursor: pointer;
   font-size: 1.2em;
   margin-top: 10px;
-  /* Espacio por encima del botón */
 }
 
 .btn-reset-password:hover {
   background-color: #46b8da;
-  /* Un tono más oscuro al pasar el mouse */
 }
 </style>
