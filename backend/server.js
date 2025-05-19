@@ -68,6 +68,7 @@ const TipoFallaSchema = new mongoose.Schema({
 const EstadisticasSchema = new mongoose.Schema({
     estadisticas: { type: String, required: true },
     supervisor_ud: { type: String, required: true },
+    detalles: { type: Array },
     createdAt: { type: Date, default: Date.now },
 });
 const ReporteSchema = new mongoose.Schema({
@@ -96,9 +97,6 @@ app.get('/api/incidencias', authenticateJWT, async (req, res) => {
             query.createdAt = { $gte: new Date(req.query.fechaInicio) };
         } else if (req.query.fechaFin) {
             query.createdAt = { $lte: new Date(req.query.fechaFin) };
-        }
-        if (req.user.rol === 'ejecutivo') {
-            query.executiveName = req.user.nombre;
         }
         const incidencias = await Incidence.find(query);
         res.status(200).json(incidencias);
@@ -157,7 +155,7 @@ app.post('/api/login', async (req, res) => {
         console.log('Usuario encontrado en la base de datos:', user);
 
         if (!user) {
-            return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+            return res.status(401).json({ message: 'Correo electrónico o contraseña incorrectos' });
         }
 
         const validPassword = await bcrypt.compare(contrasena, user.contrasena);
@@ -168,7 +166,7 @@ app.post('/api/login', async (req, res) => {
             const token = jwt.sign({ _id: user._id, nombre: user.nombre, rol: user.cargo, email: user.email }, 'tu_clave_secreta', { expiresIn: '1h' });
             res.status(200).json({ message: 'Login exitoso', token, rol: user.cargo, nombre: user.nombre, email: user.email }); // Send back nombre
         } else {
-            res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+            res.status(401).json({ message: 'Correo electrónico o contraseña incorrectos' });
         }
     } catch (error) {
         console.error('Error al iniciar sesión:', error.message);
@@ -177,22 +175,17 @@ app.post('/api/login', async (req, res) => {
 });
 
 app.post('/api/incidencias', authenticateJWT, async (req, res) => {
-    const { type, description, otroTipoError } = req.body;
-    let { estado } = req.body;
+    const { type, description, otroTipoError, estado } = req.body;
     const executiveName = req.user.nombre; // Get name from token
 
-    if (req.user.rol !== 'supervisor') {
-        estado = estado || 'pendiente'; // Default estado for executives
-    }
-
-    const newIncidence = new Incidence({type: otroTipoError || type, // Use otroTipoError if provided, else use type
+    const newIncidence = new Incidence({
+        type: otroTipoError || type, // Use otroTipoError if provided, else use type
         description,
         executiveName,
-        estado
+        estado: estado || 'pendiente'
     });
 
-    try {
-        await newIncidence.save();
+    try {await newIncidence.save();
         res.status(201).json({ message: 'Incidencia registrada exitosamente' });
     } catch (error) {
         console.error('Error al guardar la incidencia:', error.message);
@@ -228,6 +221,7 @@ app.put('/api/incidencias/:id', authenticateJWT, async (req, res) => {
         res.status(500).json({ message: 'Error al actualizar el estado de la incidencia', error: error.message });
     }
 });
+
 app.post('/api/guardar-reporte-errores', authenticateJWT, async (req, res) => {
     const { reporteErrores } = req.body;
     const usuarioGeneraReporte = req.user.nombre;
@@ -248,6 +242,8 @@ app.post('/api/guardar-reporte-errores', authenticateJWT, async (req, res) => {
         res.status(500).json({ message: 'Error al guardar el reporte de errores.' });
     }
 });
+
+// ... (el resto de tus rutas: delete, usuarios, reporte-incidencias, download)
 
 // Iniciar el servidor
 app.listen(3000, () => {

@@ -119,76 +119,9 @@ export default {
         const tipoMatch = !this.filtro.type || incidencia.type === this.filtro.type;
         const estadoMatch = !this.filtro.estado || incidencia.estado === this.filtro.estado;
         const fechaInicioMatch = !this.filtro.fechaInicio || new Date(incidencia.createdAt) >= new Date(this.filtro.fechaInicio);
-        const fechaFinMatch = !this.filtro.fechaFin || new Date(incidencia.createdAt) <= new Date(this.filtro.fechaFin);
-        return tipoMatch && estadoMatch && fechaInicioMatch && fechaFinMatch;
-      });
+        const fechaFinMatch = !this.filtro.fechaFin || new Date(incidencia.createdAt) <= new Date(this)});
     },
-  },
-  methods: {
-    obtenerIncidencias() {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('Token no proporcionado');
-        alert("Por favor inicie sesión");
-        this.$router.push('/');
-        return;
-      }
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: this.filtro,
-      };
-
-      axios.get('https://proyectodetitulo.onrender.com/api/incidencias', config)
-        .then(response => {
-          this.incidencias = response.data;
-          this.reporteErroresComunes = []; // Limpiar el reporte al obtener nuevas incidencias
-          this.reporteGenerado = false;
-        })
-        .catch(error => {
-          console.error('Error al cargar las incidencias:', error);
-          alert('Error al cargar las incidencias');
-        });
-    },
-    navegarAFormulario() {
-      if (this.usuario.rol === 'supervisor') {
-        this.$router.push('/dashboard-supervisor');
-      } else {
-        this.$router.push('/dashboard-ejecutivo');
-      }
-    },
-    verDetalleIncidencia(id) {
-      this.$router.push(`/incidencias/${id}`);
-    },
-    async borrarIncidencia(id) {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('Token no proporcionado');
-        alert('Por favor, inicie sesión');
-        this.$router.push('/');
-        return;
-      }
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
-      if (confirm('¿Estás seguro de que deseas eliminar esta incidencia?')) {
-        try {
-          await axios.delete(`https://proyectodetitulo.onrender.com/api/incidencias/${id}`, config);
-          console.log('Incidencia eliminada');
-          alert('Incidencia eliminada exitosamente');
-          this.obtenerIncidencias(); // Recargar la lista después de eliminar
-        } catch (error) {
-          console.error('Error al eliminar la incidencia:', error);
-          alert('Error al eliminar la incidencia');
-        }
-      }
-    },
-    async generarReporteErroresComunes() {
+    generarReporteErroresComunes() {
       const erroresComunes = this.incidenciasFiltradas.reduce((acc, incidencia) => {
         acc[incidencia.type] = (acc[incidencia.type] || 0) + 1;
         return acc;
@@ -212,7 +145,7 @@ export default {
         try {
           const response = await axios.post('https://proyectodetitulo.onrender.com/api/guardar-reporte-errores', { reporteErrores }, config);
           console.log('Reporte de errores guardado en el backend:', response.data.message);
-          
+          // Puedes mostrar un mensaje al usuario si lo deseas
         } catch (error) {
           console.error('Error al guardar el reporte de errores en el backend:', error);
           alert('Error al guardar el reporte de errores.');
