@@ -50,7 +50,44 @@ export default {
   },
   methods: {
     async iniciarSesion() {
-      // ... (tu código de inicio de sesión)
+      console.log('Datos enviados al backend:', {
+        usuario: this.usuario,
+        contrasena: this.contrasena
+      });
+
+      try {
+        const response = await axios.post('https://proyectodetitulo.onrender.com/api/login', {
+          usuario: this.usuario,
+          contrasena: this.contrasena
+        });
+
+        console.log('Respuesta del servidor:', response.data);
+
+        if (response.data.token) {
+          console.log('Token recibido:', response.data.token);
+
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('rol', response.data.rol);
+          localStorage.setItem('usuario', JSON.stringify({ nombre: this.usuario, email: response.data.email }));
+          console.log('Token en localStorage:', localStorage.getItem('token'));
+          console.log('Rol en localStorage:', localStorage.getItem('rol'));
+
+          console.log('Rol del usuario:', response.data.rol);
+
+          setTimeout(() => {
+            if (response.data.rol === 'supervisor') {
+              console.log('Redirigiendo a dashboard-supervisor');
+              this.$router.push('/dashboard-supervisor');
+            } else if (response.data.rol === 'ejecutivo') {
+              console.log('Redirigiendo a dashboard-ejecutivo');
+              this.$router.push('/dashboard-ejecutivo');
+            }
+          }, 500);
+        }
+      } catch (error) {
+        console.error('Error al iniciar sesión:', error);
+        alert('Usuario o contraseña incorrectos');
+      }
     },
     mostrarFormularioReset() {
       this.mostrarResetFormulario = true;
@@ -82,38 +119,93 @@ export default {
 
 <style scoped>
 /* loginpage.vue */
-/* ... (tus estilos existentes) */
-
-.reset-form {
-  margin-top: 20px;
-  padding: 15px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
+/* Estilo del formulario de login */
+.login-container {
+  background-image: url('@/assets/edificio.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 
-.btn-reset-submit,
-.btn-reset-cancel {
-  background-color: #5bc0de;
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 0;
+}
+
+.login-box {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  text-align: center;
+  z-index: 1;
+}
+
+.title-banner {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+h1 {
+  color: #d9534f;
+  font-size: 2em;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  font-size: 1.2em;
+  color: #444;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+.btn-login {
+  background-color: #d9534f;
   color: white;
-  padding: 10px 15px;
+  padding: 10px 20px;
+  width: 100%;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1em;
+  font-size: 1.2em;
+}
+
+.btn-login:hover {
+  background-color: #c23d39;
+}
+
+.btn-reset-password {
+  background-color: #5bc0de;
+  color: white;
+  padding: 10px 20px;
+  width: 100%;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.2em;
   margin-top: 10px;
-  margin-right: 5px;
 }
 
-.btn-reset-cancel {
-  background-color: #d9534f;
-}
-
-.btn-reset-submit:hover {
+.btn-reset-password:hover {
   background-color: #46b8da;
-}
-
-.btn-reset-cancel:hover {
-  background-color: #c9302c;
 }
 </style>
