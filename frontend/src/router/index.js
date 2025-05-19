@@ -2,17 +2,15 @@ import { createRouter, createWebHistory } from 'vue-router';
 import LoginPage from '../views/LoginPage.vue';
 import DashboardEjecutivo from '../views/DashboardEjecutivo.vue';
 import DashboardSupervisor from '../views/DashboardSupervisor.vue';
-import IncidenciaSupervisor from '../views/IncidenciaSupervisor.vue';
 import IncidenciasLista from '../views/IncidenciasLista.vue';
 import AdministracionUsuarios from '../views/AdministracionUsuarios.vue';
 import ListaSupervisor from '../views/ListaSupervisor.vue';
-import GraficosSupervisor from '../views/GraficosSupervisor.vue'; // Importar el componente
+import GraficosSupervisor from '../views/GraficosSupervisor.vue'; 
 
 const routes = [
   { path: '/', component: LoginPage },
   { path: '/dashboard-ejecutivo', component: DashboardEjecutivo, meta: { requiresAuth: true, rol: 'ejecutivo' } },
   { path: '/dashboard-supervisor', component: DashboardSupervisor, meta: { requiresAuth: true, rol: 'supervisor' } },
-  { path: '/incidencias/:id', component: IncidenciaSupervisor, meta: { requiresAuth: true, rol: 'supervisor' } },
   { path: '/incidencias-lista', component: IncidenciasLista, meta: { requiresAuth: true, rol: 'ejecutivo' } },
   { path: '/administracion', component: AdministracionUsuarios },
   { path: '/lista-supervisor', component: ListaSupervisor, meta: { requiresAuth: true, rol: 'supervisor' } }, // Nueva ruta para la lista del supervisor
