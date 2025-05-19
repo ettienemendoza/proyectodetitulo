@@ -107,13 +107,16 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// server.js
+// ... (tus imports y configuración inicial)
+
 app.post('/api/reset-password', async (req, res) => {
-    const { email } = req.body;
+    const { usuario, email } = req.body; // Ahora esperamos usuario y email
 
     try {
-        const user = await Usuario.findOne({ email });
+        const user = await Usuario.findOne({ nombre: usuario, email: email }); // Buscamos por ambos campos
         if (!user) {
-            return res.status(404).json({ message: 'Correo electrónico no encontrado' });
+            return res.status(404).json({ message: 'Usuario o correo electrónico no encontrados' });
         }
 
         const mailOptions = {
@@ -137,6 +140,8 @@ app.post('/api/reset-password', async (req, res) => {
         res.status(500).json({ message: 'Error al resetear la contraseña: ' + error.message });
     }
 });
+
+
 
 app.post('/api/login', async (req, res) => {
     const { usuario, contrasena } = req.body;

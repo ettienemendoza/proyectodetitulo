@@ -15,6 +15,10 @@
       "dom.iterable",
       "scripthost"
     ]
-  }
+  },
+  "exclude": [
+    "src/views/IncidenciaDetalle.vue",
+    "src/views/IncidenciaSupervisor.vue"
+  ]
 }
 
