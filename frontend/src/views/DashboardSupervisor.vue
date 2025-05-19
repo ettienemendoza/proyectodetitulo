@@ -26,6 +26,7 @@
 </template>
 
 <script>
+// dashboardsupervisor.vue
 export default {
   methods: {
     // Redirige a la vista de gráfico de estadísticas
@@ -56,6 +57,7 @@ export default {
 </script>
 
 <style scoped>
+/* dashboardsupervisor.vue */
 .supervisor-container {
   text-align: center;
   padding: 20px;
@@ -65,7 +67,8 @@ export default {
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  position: relative; /* Necesario para el z-index del overlay */
+  position: relative;
+  /* Necesario para el z-index del overlay */
 }
 
 .background-image-overlay {
@@ -74,26 +77,34 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('@/assets/supervisor.jpg'); /* Ruta a tu imagen */
+  background-image: url('@/assets/supervisor.jpg');
+  /* Ruta a tu imagen */
   background-size: cover;
   background-position: center top;
-  filter: grayscale(100%); /* Aplica el filtro solo a la capa de la imagen */
-  z-index: -1; /* Envía la capa de la imagen detrás del contenedor principal */
-  opacity: 0.5; /* Ajusta la opacidad para que sea más visible */
+  filter: grayscale(100%);
+  /* Aplica el filtro solo a la capa de la imagen */
+  z-index: -1;
+  /* Envía la capa de la imagen detrás del contenedor principal */
+  opacity: 0.5;
+  /* Ajusta la opacidad para que sea más visible */
 }
 
 .content {
-  position: relative; /* Asegura que el contenido esté encima del overlay */
-  z-index: 0; /* Coloca el contenido encima de la imagen de fondo */
+  position: relative;
+  /* Asegura que el contenido esté encima del overlay */
+  z-index: 0;
+  /* Coloca el contenido encima de la imagen de fondo */
 }
 
 .supervisor-header {
-  background-color: #b81e1e; /* Color de fondo rojo sólido */
+  background-color: #b81e1e;
+  /* Color de fondo rojo sólido */
   color: white;
   padding: 20px;
   margin-bottom: 30px;
   text-align: center;
-  z-index: 1; /* Asegura que esté encima del content */
+  z-index: 1;
+  /* Asegura que esté encima del content */
 }
 
 .supervisor-header h1,
@@ -108,18 +119,21 @@ export default {
   justify-content: center;
   gap: 20px;
   margin-bottom: 30px;
-  z-index: 1; /* Asegura que esté encima del content */
+  z-index: 1;
+  /* Asegura que esté encima del content */
 }
 
 .option-card {
-  background-color: #b81e1e; /* Color de fondo rojo sólido */
+  background-color: #b81e1e;
+  /* Color de fondo rojo sólido */
   color: white;
   padding: 30px;
   border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.3s;
   width: 200px;
-  z-index: 1; /* Asegura que esté encima del content */
+  z-index: 1;
+  /* Asegura que esté encima del content */
 }
 
 .option-card:hover {
@@ -145,7 +159,8 @@ h3 {
   cursor: pointer;
   font-size: 1.1em;
   transition: background-color 0.3s;
-  z-index: 1; /* Asegura que esté encima del content */
+  z-index: 1;
+  /* Asegura que esté encima del content */
 }
 
 .logout-button:hover {

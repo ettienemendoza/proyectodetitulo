@@ -10,7 +10,6 @@
       <div class="incidence-form-container">
         <h2>Formulario de Incidencia</h2>
 
-        <!-- Tipo de error -->
         <div class="form-group">
           <div class="form-label">
             <label for="tipoError">Tipo de Error:</label>
@@ -27,7 +26,6 @@
           </div>
         </div>
 
-        <!-- Campo para especificar otro tipo de error -->
         <div class="form-group" v-if="mostrarOtroTipoError">
           <div class="form-label">
             <label for="otroTipoError">Especificar Otro Error:</label>
@@ -37,7 +35,6 @@
           </div>
         </div>
 
-        <!-- Descripción -->
         <div class="form-group">
           <div class="form-label">
             <label for="descripcion">Descripción:</label>
@@ -47,7 +44,6 @@
           </div>
         </div>
 
-        <!-- Comentarios (solo visible para el supervisor) -->
         <div v-if="usuario.rol === 'supervisor'" class="form-group">
           <div class="form-label">
             <label for="comentarios">Comentarios:</label>
@@ -57,7 +53,6 @@
           </div>
         </div>
 
-        <!-- Botón de agregar -->
         <button @click="guardarIncidencia" class="agregar-button">Agregar</button>
       </div>
     </div>
@@ -65,6 +60,7 @@
 </template>
 
 <script>
+// dashboardejecutivo.vue
 import axios from 'axios';
 
 export default {
@@ -126,6 +122,7 @@ export default {
         })
         .catch(error => {
           console.error('Error al agregar la incidencia:', error);
+          alert('Error al registrar la incidencia');
         });
     },
     navegarAIncidencias() {
@@ -145,6 +142,7 @@ export default {
 </script>
 
 <style scoped>
+/* dashboardejecutivo.vue */
 .dashboard-container {
   display: flex;
   height: 100vh;
@@ -154,10 +152,14 @@ export default {
   width: 200px;
   background-color: #b81e1e;
   display: flex;
-  flex-direction: column; /* Para alinear los botones verticalmente */
-  justify-content: flex-start; /* Alinea los elementos al inicio */
-  align-items: center; /* Centra los elementos horizontalmente */
-  padding-top: 20px; /* Espacio en la parte superior */
+  flex-direction: column;
+  /* Para alinear los botones verticalmente */
+  justify-content: flex-start;
+  /* Alinea los elementos al inicio */
+  align-items: center;
+  /* Centra los elementos horizontalmente */
+  padding-top: 20px;
+  /* Espacio en la parte superior */
 }
 
 .sidebar-button {
@@ -167,14 +169,18 @@ export default {
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  margin-bottom: 10px; /* Espacio entre los botones */
-  width: 80%; /* Ajusta el ancho de los botones */
+  margin-bottom: 10px;
+  /* Espacio entre los botones */
+  width: 80%;
+  /* Ajusta el ancho de los botones */
   text-align: center;
 }
 
-.sidebar > button:first-child {
-  margin-top: 100px; /* Espacio desde la parte superior */
-  margin-bottom: 100px; /* Espacio hacia el botón de abajo */
+.sidebar>button:first-child {
+  margin-top: 100px;
+  /* Espacio desde la parte superior */
+  margin-bottom: 100px;
+  /* Espacio hacia el botón de abajo */
 }
 
 .sidebar-button:hover {
@@ -182,16 +188,21 @@ export default {
 }
 
 .logout-button {
-  margin-top: auto; /* Empuja el botón hacia la parte inferior */
-  margin-bottom: 200px; /* Espacio en la parte inferior */
-  display: flex; /* Para alinear texto e icono */
+  margin-top: auto;
+  /* Empuja el botón hacia la parte inferior */
+  margin-bottom: 200px;
+  /* Espacio en la parte inferior */
+  display: flex;
+  /* Para alinear texto e icono */
   align-items: center;
   justify-content: center;
 }
 
 .logout-icon {
-  margin-left: 5px; /* Espacio entre el texto y el icono */
-  font-size: 1.2em; /* Ajusta el tamaño del icono */
+  margin-left: 5px;
+  /* Espacio entre el texto y el icono */
+  font-size: 1.2em;
+  /* Ajusta el tamaño del icono */
 }
 
 .main-content {

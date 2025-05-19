@@ -14,6 +14,10 @@
             <input type="password" id="contrasena" v-model="nuevoUsuario.contrasena" required />
           </div>
           <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" v-model="nuevoUsuario.email" required />
+          </div>
+          <div class="form-group">
             <label for="cargo">Cargo:</label>
             <select id="cargo" v-model="nuevoUsuario.cargo" required>
               <option value="ejecutivo">Ejecutivo</option>
@@ -30,6 +34,7 @@
             <thead>
               <tr>
                 <th>Nombre</th>
+                <th>Email</th>
                 <th>Cargo</th>
                 <th>Acciones</th>
               </tr>
@@ -38,6 +43,9 @@
               <tr v-for="usuario in usuarios" :key="usuario._id">
                 <td>
                   <input type="text" v-model="usuario.nombre" :disabled="editingId !== usuario._id" />
+                </td>
+                <td>
+                  <input type="email" v-model="usuario.email" :disabled="editingId !== usuario._id" />
                 </td>
                 <td>
                   <select v-model="usuario.cargo" :disabled="editingId !== usuario._id">
@@ -61,6 +69,7 @@
 </template>
 
 <script>
+// administraciondeusuarios.vue
 import axios from 'axios';
 
 export default {
@@ -70,7 +79,8 @@ export default {
       nuevoUsuario: {
         nombre: '',
         contrasena: '',
-        cargo: 'ejecutivo'
+        cargo: 'ejecutivo',
+        email: '' // Agregamos el campo email
       },
       usuarios: [],
       editingId: null,
@@ -93,7 +103,7 @@ export default {
         console.log(response.data);
         alert('Usuario creado exitosamente');
         this.obtenerUsuarios();
-        this.nuevoUsuario = { nombre: '', contrasena: '', cargo: 'ejecutivo' };
+        this.nuevoUsuario = { nombre: '', contrasena: '', cargo: 'ejecutivo', email: '' }; // Limpiamos el email
       } catch (error) {
         console.error('Error al agregar el usuario:', error);
         alert('Error al crear el usuario');
@@ -149,6 +159,7 @@ export default {
           {
             nombre: usuario.nombre,
             cargo: usuario.cargo,
+            email: usuario.email
           },
           config
         );
@@ -169,6 +180,7 @@ export default {
 </script>
 
 <style scoped>
+/* administraciondeusuarios.vue */
 /* Estilos del formulario de administración */
 .admin-container {
   padding: 20px;

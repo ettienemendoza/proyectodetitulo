@@ -15,19 +15,22 @@
           <input type="password" v-model="contrasena" id="contrasena" placeholder="Contraseña" />
         </div>
         <button @click="iniciarSesion" class="btn-login">Iniciar Sesión</button>
-      </div>
+        <button @click="resetPassword" class="btn-reset-password">Olvidé mi contraseña</button>
+        </div>
     </div>
   </div>
 </template>
 
 <script>
+// loginpage.vue
 import axios from 'axios';
 
 export default {
   data() {
     return {
       usuario: '',
-      contrasena: ''
+      contrasena: '',
+      email: '' // Agregamos el email para la recuperación de contraseña
     };
   },
   methods: {
@@ -50,8 +53,7 @@ export default {
 
           localStorage.setItem('token', response.data.token);
           localStorage.setItem('rol', response.data.rol);
-          localStorage.setItem('usuario', JSON.stringify({ nombre: this.usuario }));
-
+          localStorage.setItem('usuario', JSON.stringify({ nombre: this.usuario, email: response.data.email })); // Guardamos el email
           console.log('Token en localStorage:', localStorage.getItem('token'));
           console.log('Rol en localStorage:', localStorage.getItem('rol'));
 
@@ -71,12 +73,28 @@ export default {
         console.error('Error al iniciar sesión:', error);
         alert('Usuario o contraseña incorrectos');
       }
+    },
+    async resetPassword() { // Método para recuperar la contraseña
+      const email = prompt('Por favor, ingresa tu correo electrónico:');
+      if (!email) {
+        alert('Debes ingresar un correo electrónico para recuperar tu contraseña.');
+        return;
+      }
+
+      try {
+        const response = await axios.post('https://proyectodetitulo.onrender.com/api/reset-password', { email });
+        alert(response.data.message);
+      } catch (error) {
+        console.error('Error al solicitar el restablecimiento de contraseña:', error);
+        alert(error.response.data.message || 'Error al solicitar el restablecimiento de contraseña');
+      }
     }
   }
 };
 </script>
 
 <style scoped>
+
 /* Estilo del formulario de login */
 .login-container {
   background-image: url('@/assets/edificio.jpg');
@@ -149,5 +167,24 @@ input {
 
 .btn-login:hover {
   background-color: #c23d39;
+}
+
+.btn-reset-password {
+  background-color: #5bc0de;
+  /* Un color diferente para el botón de reset */
+  color: white;
+  padding: 10px 20px;
+  width: 100%;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.2em;
+  margin-top: 10px;
+  /* Espacio por encima del botón */
+}
+
+.btn-reset-password:hover {
+  background-color: #46b8da;
+  /* Un tono más oscuro al pasar el mouse */
 }
 </style>

@@ -25,14 +25,15 @@
         </div>
         <button @click="generarReporte" class="generate-report-button">Generar Reporte</button>
         <button @click="volverAlMenuPrincipal" class="back-to-dashboard-button">Volver al Menú Principal</button>
-      </div>
+        <button @click="descargarGrafico" class="download-chart-button" v-if="reporteGenerado">Descargar Gráfico</button>
+        </div>
       <div class="report-section">
         <div v-if="reporteGenerado">
           <h3>Resumen del Reporte</h3>
           <p>{{ resumen }}</p>
           <div class="chart-card" v-if="chartData">
             <canvas ref="graficoCanvas" width="400" height="400"></canvas>
-            
+
           </div>
           <div v-else>
             <p>No hay datos para mostrar en el gráfico con los filtros seleccionados.</p>
@@ -47,6 +48,7 @@
 </template>
 
 <script>
+// graficossupervisor.vue
 import axios from 'axios';
 import Chart from 'chart.js/auto';
 
@@ -98,139 +100,154 @@ export default {
         alert('Error al generar el reporte');
       }
     },
-   procesarDatos(data) {
-  console.log('Datos recibidos para procesar:', data);
-  if (!data || data.length === 0) {
-    this.resumen = 'No se encontraron incidencias con los filtros seleccionados.';
-    this.chartData = null;
-    if (this.chartInstance) {
-      this.chartInstance.destroy();
-      this.chartInstance = null;
-    }
-    return;
-  }
-  const conteoPorTipo = {};
-  let totalIncidencias = 0;
+    procesarDatos(data) {
+      console.log('Datos recibidos para procesar:', data);
+      if (!data || data.length === 0) {
+        this.resumen = 'No se encontraron incidencias con los filtros seleccionados.';
+        this.chartData = null;
+        if (this.chartInstance) {
+          this.chartInstance.destroy();
+          this.chartInstance = null;
+        }
+        return;
+      }
+      const conteoPorTipo = {};
+      let totalIncidencias = 0;
 
-  data.forEach(incidencia => {
-    const tipo = incidencia.type;
-    conteoPorTipo[`${tipo}`] = (conteoPorTipo[`${tipo}`] || 0) + 1;
-    totalIncidencias++;
-  });
+      data.forEach(incidencia => {
+        const tipo = incidencia.type;
+        conteoPorTipo[`${tipo}`] = (conteoPorTipo[`${tipo}`] || 0) + 1;
+        totalIncidencias++;
+      });
 
-  console.log('Conteo por tipo:', conteoPorTipo);
-  const labels = Object.keys(conteoPorTipo);
-  const valores = Object.values(conteoPorTipo);
-  const porcentajes = valores.map(valor => ((valor / totalIncidencias) * 100).toFixed(2) + '%');
+      console.log('Conteo por tipo:', conteoPorTipo);
+      const labels = Object.keys(conteoPorTipo);
+      const valores = Object.values(conteoPorTipo);
+      const porcentajes = valores.map(valor => ((valor / totalIncidencias) * 100).toFixed(2) + '%');
 
-  this.chartData = {
-    labels: labels,
-    datasets: [{
-      label: 'Tipos de Incidencia',
-      data: valores,
-      backgroundColor: [
-        'rgba(255, 99, 132, 0.6)',
-        'rgba(54, 162, 235, 0.6)',
-        'rgba(255, 206, 86, 0.6)',
-        'rgba(75, 192, 192, 0.6)',
-        'rgba(153, 102, 255, 0.6)',
-        'rgba(255, 159, 64, 0.6)',
-        'rgba(199, 199, 199, 0.6)',
-        'rgba(128, 0, 128, 0.6)', // Purple
-        'rgba(0, 128, 0, 0.6)',   // Green
-        'rgba(0, 0, 128, 0.6)',   // Navy
-      ],
-      borderColor: [
-        'rgba(255, 99, 132, 1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-        'rgba(75, 192, 192, 1)',
-        'rgba(153, 102, 255, 1)',
-        'rgba(255, 159, 64, 1)',
-        'rgba(199, 199, 199, 1)',
-        'rgba(128, 0, 128, 1)',
-        'rgba(0, 128, 0, 1)',
-        'rgba(0, 0, 128, 1)',
-      ],
-      borderWidth: 1,
-      porcentajes: porcentajes
-    }]
-  };
+      this.chartData = {
+        labels: labels,
+        datasets: [{
+          label: 'Tipos de Incidencia',
+          data: valores,
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.6)',
+            'rgba(54, 162, 235, 0.6)',
+            'rgba(255, 206, 86, 0.6)',
+            'rgba(75, 192, 192, 0.6)',
+            'rgba(153, 102, 255, 0.6)',
+            'rgba(255, 159, 64, 0.6)',
+            'rgba(199, 199, 199, 0.6)',
+            'rgba(128, 0, 128, 0.6)', // Purple
+            'rgba(0, 128, 0, 0.6)',   // Green
+            'rgba(0, 0, 128, 0.6)',   // Navy
+          ],
+          borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)',
+            'rgba(199, 199, 199, 1)',
+            'rgba(128, 0, 128, 1)',
+            'rgba(0, 128, 0, 1)',
+            'rgba(0, 0, 128, 1)',
+          ],
+          borderWidth: 1,
+          porcentajes: porcentajes
+        }]
+      };
 
-  console.log('Datos del gráfico (this.chartData):', this.chartData);
+      console.log('Datos del gráfico (this.chartData):', this.chartData);
 
-  // Crear el resumen textual con conteo total y por tipo
-  let resumenTexto = `Se encontraron ${totalIncidencias} incidencias en el período seleccionado. Detalles: `;
-  labels.forEach((tipo, index) => {
-    resumenTexto += `${tipo}: ${conteoPorTipo[tipo]} (${porcentajes[index]}), `;
-  });
-  this.resumen = resumenTexto.slice(0, -2) + '.';
+      // Crear el resumen textual con conteo total y por tipo
+      let resumenTexto = `Se encontraron ${totalIncidencias} incidencias en el período seleccionado. Detalles: `;
+      labels.forEach((tipo, index) => {
+        resumenTexto += `${tipo}: ${conteoPorTipo[tipo]} (${porcentajes[index]}), `;
+      });
+      this.resumen = resumenTexto.slice(0, -2) + '.';
 
-  this.$nextTick(() => {
-    this.renderChart();
-  });
-},
+      this.$nextTick(() => {
+        this.renderChart();
+      });
+    },
 
-      
-  renderChart() {
-  const canvas = this.$refs.graficoCanvas;
-  console.log('Elemento canvas en renderChart:', canvas);
-  if (canvas && this.chartData) {
-    const ctx = canvas.getContext('2d');
-    console.log('Contexto del canvas:', ctx);
-    if (this.chartInstance) {
-      this.chartInstance.destroy();
-      this.chartInstance = null;
-    }
-    this.chartInstance = new Chart(ctx, {
-      type: 'pie',
-      data: this.chartData,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'top'
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                let label = context.label || '';
-                if (label) {
-                  label += ': ';
-                }
-                if (context.parsed.y !== null) {
-                  label += context.parsed.y + ' (' + context.dataset.data[`${context.dataIndex}`] + ')';
-                  // Accede a los porcentajes desde el dataset
-                  if (context.dataset.porcentajes && context.dataset.porcentajes[`${context.dataIndex}`]) {
-                    label += ' - ' + context.dataset.porcentajes[`${context.dataIndex}`];
+
+    renderChart() {
+      const canvas = this.$refs.graficoCanvas;
+      console.log('Elemento canvas en renderChart:', canvas);
+      if (canvas && this.chartData) {
+        const ctx = canvas.getContext('2d');
+        console.log('Contexto del canvas:', ctx);
+        if (this.chartInstance) {
+          this.chartInstance.destroy();
+          this.chartInstance = null;
+        }
+        this.chartInstance = new Chart(ctx, {
+          type: 'pie',
+          data: this.chartData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    let label = context.label || '';
+                    if (label) {
+                      label += ': ';
+                    }
+                    if (context.parsed.y !== null) {
+                      label += context.parsed.y + ' (' + context.dataset.data[`${context.dataIndex}`] + ')';
+                      // Accede a los porcentajes desde el dataset
+                      if (context.dataset.porcentajes && context.dataset.porcentajes[`${context.dataIndex}`]) {
+                        label += ' - ' + context.dataset.porcentajes[`${context.dataIndex}`];
+                      }
+                    }
+                    return label;
                   }
                 }
-                return label;
               }
             }
-            }
           }
-        }
-      });
-      console.log('Instancia del gráfico:', this.chartInstance);
+        });
+        console.log('Instancia del gráfico:', this.chartInstance);
+      }
+    },
+    volverAlMenuPrincipal() {
+      this.$router.push('/dashboard-supervisor');
+    },
+    descargarGrafico() {
+      const canvas = this.$refs.graficoCanvas;
+      if (!canvas) {
+        alert('No hay gráfico para descargar.');
+        return;
+      }
+
+      const dataURL = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataURL;
+      a.download = 'reporte_grafico.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
   },
-  volverAlMenuPrincipal() {
-    this.$router.push('/dashboard-supervisor');
-  }
-},
-beforeUnmount() {
-  if (this.chartInstance) {
-    this.chartInstance.destroy();
-  }
-},
- 
-};
+  beforeUnmount() {
+    if (this.chartInstance) {
+      this.chartInstance.destroy();
+    }
+  },
 
+};
 </script>
 
 <style scoped>
+/* graficossupervisor.vue */
 .graficos-container {
   padding: 20px;
   background-color: #f2f2f2;
@@ -250,8 +267,10 @@ beforeUnmount() {
 
 .report-layout {
   display: flex;
-  gap: 20px; /* Espacio entre los dos cuadros */
-  align-items: flex-start; /* Alinea los elementos en la parte superior */
+  gap: 20px;
+  /* Espacio entre los dos cuadros */
+  align-items: flex-start;
+  /* Alinea los elementos en la parte superior */
 }
 
 .filter-section {
@@ -259,11 +278,13 @@ beforeUnmount() {
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 300px; /* Ancho fijo para la sección de filtros */
+  width: 300px;
+  /* Ancho fijo para la sección de filtros */
 }
 
 .report-section {
-  flex-grow: 1; /* La sección de reporte ocupa el espacio restante */
+  flex-grow: 1;
+  /* La sección de reporte ocupa el espacio restante */
   background-color: white;
   padding: 20px;
   border-radius: 5px;
@@ -302,7 +323,8 @@ beforeUnmount() {
   font-size: 1em;
   transition: background-color 0.3s ease;
   margin-top: 10px;
-  display: block; /* Para que los botones ocupen el ancho completo */
+  display: block;
+  /* Para que los botones ocupen el ancho completo */
   width: 100%;
   box-sizing: border-box;
 }
@@ -314,7 +336,8 @@ beforeUnmount() {
 }
 
 .back-to-dashboard-button {
-  background-color: #333; /* Un color diferente para distinguirlo */
+  background-color: #333;
+  /* Un color diferente para distinguirlo */
 }
 
 .back-to-dashboard-button:hover {
@@ -327,14 +350,19 @@ beforeUnmount() {
   padding: 15px;
   border-radius: 5px;
   text-align: center;
-  max-width: 100%; /* Asegura que no sea más ancho que su contenedor */
-  overflow: auto; /* Permite scroll si el contenido es demasiado grande (por precaución) */
+  max-width: 100%;
+  /* Asegura que no sea más ancho que su contenedor */
+  overflow: auto;
+  /* Permite scroll si el contenido es demasiado grande (por precaución) */
 }
 
 .chart-card canvas {
-  width: 100% !important; /* Hace que el canvas ocupe el ancho del contenedor */
-  height: auto !important; /* Mantiene la proporción */
-  max-height: 400px; /* O ajusta la altura máxima según lo necesites */
+  width: 100% !important;
+  /* Hace que el canvas ocupe el ancho del contenedor */
+  height: auto !important;
+  /* Mantiene la proporción */
+  max-height: 400px;
+  /* O ajusta la altura máxima según lo necesites */
 }
 
 .download-chart-button {

@@ -17,7 +17,8 @@
               <th>Fecha</th>
               <th>Hora</th>
               <th>Comentarios</th>
-              <th v-if="usuario.rol === 'supervisor'">Acciones</th> </tr>
+              <th v-if="usuario.rol === 'supervisor'">Acciones</th>
+            </tr>
           </thead>
           <tbody>
             <tr v-for="incidencia in incidencias" :key="incidencia._id">
@@ -27,7 +28,8 @@
               <td>{{ new Date(incidencia.createdAt).toLocaleDateString() }}</td>
               <td>{{ new Date(incidencia.updatedAt).toLocaleTimeString() }}</td>
               <td>{{ incidencia.comments }}</td>
-              <td v-if="usuario.rol === 'supervisor'">  <button @click="verDetalleIncidencia(incidencia._id)" class="edit-button">Editar</button>
+              <td v-if="usuario.rol === 'supervisor'">
+                <button @click="verDetalleIncidencia(incidencia._id)" class="edit-button">Editar</button>
                 <button @click="borrarIncidencia(incidencia._id)" class="delete-button">Borrar</button>
               </td>
             </tr>
@@ -42,6 +44,7 @@
 </template>
 
 <script>
+// incidenciaslista.vue
 import axios from 'axios';
 
 export default {
@@ -120,6 +123,7 @@ export default {
 </script>
 
 <style scoped>
+/* incidenciaslista.vue */
 /* Tu estilo para la página de lista de incidencias */
 .incidencias-lista-container {
   display: flex;
@@ -157,12 +161,14 @@ export default {
   padding: 20px;
   background-color: #f9f9f9;
   margin-left: 210px;
+  overflow-y: auto;
 }
 
 h2 {
   text-align: center;
   margin-bottom: 20px;
   color: #444;
+  color: #b81e1e;
 }
 
 .tabla-container {
@@ -175,7 +181,8 @@ h2 {
   border-collapse: collapse;
 }
 
-.incidencias-tabla th, .incidencias-tabla td {
+.incidencias-tabla th,
+.incidencias-tabla td {
   border: 1px solid #333;
   padding: 8px 12px;
   text-align: left;
@@ -190,6 +197,7 @@ h2 {
   text-align: center;
   font-style: italic;
 }
+
 .edit-button {
   background-color: #4CAF50;
   color: white;
