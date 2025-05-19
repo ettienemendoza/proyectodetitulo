@@ -44,12 +44,16 @@
           </div>
         </div>
 
-        <div v-if="usuario.rol === 'supervisor'" class="form-group">
+        <div class="form-group">
           <div class="form-label">
-            <label for="comentarios">Comentarios:</label>
+            <label for="estado">Estado:</label>
           </div>
           <div class="form-input">
-            <textarea id="comentarios" v-model="incidencia.comments" placeholder="Ingrese los comentarios del error"></textarea>
+            <select id="estado" v-model="incidencia.estado">
+              <option value="pendiente">Pendiente</option>
+              <option value="en proceso">En Proceso</option>
+              <option value="resuelta">Resuelta</option>
+            </select>
           </div>
         </div>
 
@@ -60,7 +64,6 @@
 </template>
 
 <script>
-// dashboardejecutivo.vue
 import axios from 'axios';
 
 export default {
@@ -71,19 +74,20 @@ export default {
         otroTipoError: '',
         description: '',
         executiveName: '',
-        comments: '',
+        estado: 'pendiente', // Valor inicial del estado
         fecha: '',
         hora: '',
         createdAt: new Date(),
         updatedAt: new Date()
       },
       mostrarOtroTipoError: false,
-      usuario: {},
+      usuario: {}, // Aquí guardamos los datos del usuario logueado
     };
   },
   mounted() {
-    this.usuario = JSON.parse(localStorage.getItem('usuario')) || {};
-    this.incidencia.executiveName = this.usuario.nombre || '';
+    // Asignamos el nombre del usuario logueado al nombre ejecutivo
+    this.usuario = JSON.parse(localStorage.getItem('usuario')) || {}; // Recuperamos el usuario logueado desde localStorage
+    this.incidencia.executiveName = this.usuario.nombre || ''; // Asignamos el nombre del usuario logueado automáticamente
   },
   methods: {
     mostrarInputOtros() {
@@ -93,22 +97,27 @@ export default {
       }
     },
     guardarIncidencia() {
+      // Asignamos los valores de fecha y hora
       this.incidencia.fecha = new Date().toLocaleDateString();
       this.incidencia.hora = new Date().toLocaleTimeString();
 
+      // Obtener el token del localStorage
       const token = localStorage.getItem('token');
 
+      // Verificar que todos los campos estén completos antes de enviar
+      if (!this.incidencia.type || !this.incidencia.description || !this.incidencia.executiveName || !this.incidencia.estado) {
+        alert('Por favor complete todos los campos');
+        return;
+      }
+
+      // Configurar los headers para enviar el token
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       };
 
-      if (!this.incidencia.type || !this.incidencia.description || !this.incidencia.executiveName) {
-        alert('Por favor complete todos los campos');
-        return;
-      }
-
+      // Enviar la incidencia al backend
       axios.post('https://proyectodetitulo.onrender.com/api/incidencias', this.incidencia, config)
         .then(response => {
           console.log('Incidencia registrada:', response);
@@ -123,10 +132,12 @@ export default {
       this.$router.push('/incidencias-lista');
     },
     cerrarSesion() {
+      // Eliminar el token y la información del usuario del localStorage
       localStorage.removeItem('token');
       localStorage.removeItem('rol');
       localStorage.removeItem('usuario');
 
+      // Redirigir al usuario a la página de inicio de sesión (asumiendo que la ruta es '/')
       this.$router.push('/');
     }
   }
@@ -224,8 +235,7 @@ label {
 
 input,
 select,
-textarea {
-  width: 100%;
+textarea {width: 100%;
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;

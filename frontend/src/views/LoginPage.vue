@@ -7,8 +7,8 @@
       </div>
       <div class="login-form">
         <div class="form-group">
-          <label for="usuario">Usuario:</label>
-          <input type="text" v-model="usuario" id="usuario" placeholder="Usuario" />
+          <label for="usuario">Correo Electrónico:</label>
+          <input type="text" v-model="usuario" id="usuario" placeholder="Correo Electrónico" />
         </div>
         <div class="form-group">
           <label for="contrasena">Contraseña:</label>
@@ -26,7 +26,7 @@
             <label for="resetEmail">Correo Electrónico:</label>
             <input type="email" v-model="resetEmail" id="resetEmail" placeholder="Correo Electrónico" />
           </div>
-          <button @click="resetPassword" class="btn-reset-submit">Enviar Contraseña al Correo</button>
+          <button @click="solicitarResetSupervisor" class="btn-reset-submit">Solicitar Restablecimiento</button>
           <button @click="mostrarResetFormulario = false" class="btn-reset-cancel">Cancelar</button>
         </div>
       </div>
@@ -41,7 +41,7 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      usuario: '',
+      usuario: '', // Ahora 'usuario' en el frontend representa el correo electrónico
       contrasena: '',
       resetUsuario: '',
       resetEmail: '',
@@ -51,13 +51,13 @@ export default {
   methods: {
     async iniciarSesion() {
       console.log('Datos enviados al backend:', {
-        usuario: this.usuario,
+        usuario: this.usuario, // Enviamos el correo electrónico como 'usuario'
         contrasena: this.contrasena
       });
 
       try {
         const response = await axios.post('https://proyectodetitulo.onrender.com/api/login', {
-          usuario: this.usuario,
+          usuario: this.usuario, // Enviamos el correo electrónico como 'usuario'
           contrasena: this.contrasena
         });
 
@@ -68,7 +68,7 @@ export default {
 
           localStorage.setItem('token', response.data.token);
           localStorage.setItem('rol', response.data.rol);
-          localStorage.setItem('usuario', JSON.stringify({ nombre: this.usuario, email: response.data.email }));
+          localStorage.setItem('usuario', JSON.stringify({ nombre: response.data.nombre, email: this.usuario })); // Guardamos nombre y email
           console.log('Token en localStorage:', localStorage.getItem('token'));
           console.log('Rol en localStorage:', localStorage.getItem('rol'));
 
@@ -86,28 +86,28 @@ export default {
         }
       } catch (error) {
         console.error('Error al iniciar sesión:', error);
-        alert('Usuario o contraseña incorrectos');
+        alert('Correo electrónico o contraseña incorrectos'); // Mensaje de error actualizado
       }
     },
     mostrarFormularioReset() {
       this.mostrarResetFormulario = true;
     },
-    async resetPassword() {
+    async solicitarResetSupervisor() {
       if (!this.resetUsuario || !this.resetEmail) {
         alert('Por favor, ingresa tu usuario y correo electrónico.');
         return;
       }
 
       try {
-        const response = await axios.post('https://proyectodetitulo.onrender.com/api/reset-password', {
+        const response = await axios.post('https://proyectodetitulo.onrender.com/api/request-password-reset', {
           usuario: this.resetUsuario,
           email: this.resetEmail,
         });
         alert(response.data.message);
         this.mostrarResetFormulario = false; // Ocultar el formulario después del envío
       } catch (error) {
-        console.error('Error al solicitar el restablecimiento de contraseña:', error);
-        alert(error.response.data.message || 'Error al solicitar el restablecimiento de contraseña');
+        console.error('Error al solicitar restablecimiento al supervisor:', error);
+        alert(error.response.data.message || 'Error al solicitar restablecimiento.');
       } finally {
         this.resetUsuario = '';
         this.resetEmail = '';
@@ -194,18 +194,27 @@ input {
 }
 
 .btn-reset-password {
-  background-color: #5bc0de;
+  background-color: #007bff; /* Un color diferente para la solicitud */
   color: white;
   padding: 10px 20px;
   width: 100%;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1.2em;
+  font-size: 1em;
   margin-top: 10px;
+  margin-right: 5px;
 }
 
-.btn-reset-password:hover {
-  background-color: #46b8da;
+.btn-reset-cancel {
+  background-color: #d9534f;
+}
+
+.btn-reset-submit:hover {
+  background-color: #0056b3;
+}
+
+.btn-reset-cancel:hover {
+  background-color: #c9302c;
 }
 </style>

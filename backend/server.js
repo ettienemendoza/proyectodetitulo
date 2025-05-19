@@ -11,7 +11,6 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Conexión a la base de datos MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -49,10 +48,7 @@ const IncidenceSchema = new mongoose.Schema({
     type: { type: String, required: true },
     description: { type: String, required: true },
     executiveName: { type: String, required: true },
-    comments: {
-        type: String,
-        required: function () { return this.rol === 'supervisor'; }
-    },
+    estado: { type: String, required: true, default: 'pendiente' }, // Renamed 'comments' to 'estado' and set default
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
 });
@@ -91,7 +87,20 @@ const Reporte = mongoose.model('Reporte', ReporteSchema);
 
 app.get('/api/incidencias', authenticateJWT, async (req, res) => {
     try {
-        const incidencias = await Incidence.find();
+        const query = {};
+        if (req.query.type) query.type = req.query.type;
+        if (req.query.estado) query.estado = req.query.estado;
+        if (req.query.fechaInicio && req.query.fechaFin) {
+            query.createdAt = { $gte: new Date(req.query.fechaInicio), $lte: new Date(req.query.fechaFin) };
+        } else if (req.query.fechaInicio) {
+            query.createdAt = { $gte: new Date(req.query.fechaInicio) };
+        } else if (req.query.fechaFin) {
+            query.createdAt = { $lte: new Date(req.query.fechaFin) };
+        }
+        if (req.user.rol === 'ejecutivo') {
+            query.executiveName = req.user.nombre;
+        }
+        const incidencias = await Incidence.find(query);
         res.status(200).json(incidencias);
     } catch (error) {
         console.error('Error al obtener las incidencias:', error.message);
@@ -107,15 +116,11 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// server.js
-
-
 app.post('/api/reset-password', async (req, res) => {
-    const { usuario, email } = req.body; // Ahora esperamos usuario y email
-        console.log('Datos recibidos para reset-password:', { usuario, email });
+    const { usuario, email } = req.body;
 
     try {
-        const user = await Usuario.findOne({ nombre: usuario, email: email }); // Buscamos por ambos campos
+        const user = await Usuario.findOne({ nombre: usuario, email: email });
         if (!user) {
             return res.status(404).json({ message: 'Usuario o correo electrónico no encontrados' });
         }
@@ -142,16 +147,13 @@ app.post('/api/reset-password', async (req, res) => {
     }
 });
 
-
-
 app.post('/api/login', async (req, res) => {
     const { usuario, contrasena } = req.body;
 
     console.log('Datos recibidos del frontend:', { usuario, contrasena });
 
     try {
-        const user = await Usuario.findOne({ nombre: usuario });
-
+        const user = await Usuario.findOne({ email: usuario }); // Login with email
         console.log('Usuario encontrado en la base de datos:', user);
 
         if (!user) {
@@ -164,7 +166,7 @@ app.post('/api/login', async (req, res) => {
 
         if (validPassword) {
             const token = jwt.sign({ _id: user._id, nombre: user.nombre, rol: user.cargo, email: user.email }, 'tu_clave_secreta', { expiresIn: '1h' });
-            res.status(200).json({ message: 'Login exitoso', token, rol: user.cargo, email: user.email });
+            res.status(200).json({ message: 'Login exitoso', token, rol: user.cargo, nombre: user.nombre, email: user.email }); // Send back nombre
         } else {
             res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
         }
@@ -174,41 +176,19 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-app.get('/api/incidencias/supervisor', authenticateJWT, async (req, res) => {
-    if (req.user.rol !== 'supervisor') {
-        return res.status(403).json({ message: 'Acceso prohibido' });
-    }
-    try {
-        const incidencias = await Incidence.find();
-        res.status(200).json(incidencias);
-    } catch (error) {
-        console.error('Error al obtener las incidencias:', error.message);
-        res.status(500).json({ message: 'Error al obtener las incidencias', error: error.message });
-    }
-});
-
-app.get('/api/incidencias/ejecutivo', authenticateJWT, async (req, res) => {
-    try {
-        const incidencias = await Incidence.find({ executiveName: req.user.nombre });
-        res.status(200).json(incidencias);
-    } catch (error) {
-        console.error('Error al obtener las incidencias del ejecutivo:', error.message);
-        res.status(500).json({ message: 'Error al obtener las incidencias del ejecutivo', error: error.message });
-    }
-});
-
 app.post('/api/incidencias', authenticateJWT, async (req, res) => {
-    const { type, description, executiveName, comments } = req.body;
+    const { type, description, otroTipoError } = req.body;
+    let { estado } = req.body;
+    const executiveName = req.user.nombre; // Get name from token
 
-    if (req.user.rol !== 'supervisor' && comments) {
-        return res.status(400).json({ message: 'Solo los supervisores pueden agregar comentarios' });
+    if (req.user.rol !== 'supervisor') {
+        estado = estado || 'pendiente'; // Default estado for executives
     }
 
-    const newIncidence = new Incidence({
-        type,
+    const newIncidence = new Incidence({type: otroTipoError || type, // Use otroTipoError if provided, else use type
         description,
         executiveName,
-        comments
+        estado
     });
 
     try {
@@ -234,227 +214,38 @@ app.get('/api/incidencias/:id', authenticateJWT, async (req, res) => {
 
 app.put('/api/incidencias/:id', authenticateJWT, async (req, res) => {
     try {
-        const incidencia = await Incidence.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!incidencia) {
-            return res.status(404).json({ message: 'Incidencia no encontrada' });
-        }
-        res.status(200).json({ message: 'Incidencia actualizada exitosamente', incidencia });
-    } catch (error) {
-        res.status(500).json({ message: 'Error al actualizar la incidencia', error: error.message });
-    }
-});
-
-app.delete('/api/incidencias/:id', authenticateJWT, async (req, res) => {
-    try {
-        const incidencia = await Incidence.findByIdAndDelete(req.params.id);
-        if (!incidencia) {
-            return res.status(404).json({ message: 'Incidencia no encontrada' });
-        }
-        res.status(200).json({ message: 'Incidencia eliminada exitosamente' });
-    } catch (error) {
-        res.status(500).json({ message: 'Error al eliminar la incidencia', error: error.message });
-    }
-});
-
-app.put('/api/incidencias/:id', authenticateJWT, async (req, res) => {
-    try {
+        const { estado } = req.body;
         const incidencia = await Incidence.findByIdAndUpdate(
             req.params.id,
-            { comments: req.body.comments },
+            { estado, updatedAt: Date.now() },
             { new: true }
         );
         if (!incidencia) {
             return res.status(404).json({ message: 'Incidencia no encontrada' });
         }
-        res.status(200).json({ message: 'Comentario agregado/actualizado', incidencia });
+        res.status(200).json({ message: 'Estado de la incidencia actualizado exitosamente', incidencia });
     } catch (error) {
-        console.error("Error al agregar/actualizar comentario:", error);
-        res.status(500).json({ message: 'Error al agregar/actualizar comentario', error: error.message });
+        res.status(500).json({ message: 'Error al actualizar el estado de la incidencia', error: error.message });
     }
 });
-
-app.get('/api/usuarios', async (req, res) => {
-    try {
-        const usuarios = await Usuario.find();
-        res.status(200).json(usuarios);
-    } catch (error) {
-        console.error('Error al obtener los usuarios:', error.message);
-        res.status(500).json({ message: 'Error al obtener los usuarios', error: error.message });
-    }
-});
-
-app.post('/api/usuarios', async (req, res) => {
-    const { nombre, contrasena, cargo, email } = req.body;
+app.post('/api/guardar-reporte-errores', authenticateJWT, async (req, res) => {
+    const { reporteErrores } = req.body;
+    const usuarioGeneraReporte = req.user.nombre;
 
     try {
-        const nuevoUsuario = new Usuario({ nombre, contrasena, cargo, email });
-        await nuevoUsuario.save();
-        res.status(201).json({ message: 'Usuario creado exitosamente' });
-    } catch (error) {
-        console.error('Error al crear el usuario:', error.message);
-        res.status(500).json({ message: 'Error al crear el usuario', error: error.message });
-    }
-});
-
-app.get('/api/usuarios/:id', authenticateJWT, async (req, res) => {
-    try {
-        const usuario = await Usuario.findById(req.params.id);
-        if (!usuario) {
-            return res.status(404).json({ message: 'Usuario no encontrado' });
-        }
-        res.status(200).json(usuario);
-    } catch (error) {
-        console.error('Error al obtener el usuario:', error.message);
-        res.status(500).json({ message: 'Error al obtener el usuario', error: error.message });
-    }
-});
-
-app.put('/api/usuarios/:id', authenticateJWT, async (req, res) => {
-    try {
-        const usuario = await Usuario.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!usuario) {
-            return res.status(404).json({ message: 'Usuario no encontrado' });
-        }
-        res.status(200).json({ message: 'Usuario actualizado exitosamente', usuario });
-    } catch (error) {
-        console.error('Error al actualizar el usuario:', error.message);
-        res.status(500).json({ message: 'Error al actualizar el usuario', error: error.message });
-    }
-});
-
-app.delete('/api/usuarios/:id', authenticateJWT, async (req, res) => {
-    try {
-        const usuario = await Usuario.findByIdAndDelete(req.params.id);
-        if (!usuario) {
-            return res.status(404).json({ message: 'Usuario no encontrado' });
-        }
-        res.status(200).json({ message: 'Usuario eliminado exitosamente' });
-    } catch (error) {
-        console.error('Error al eliminar el usuario:', error.message);
-        res.status(500).json({ message: 'Error al eliminar el usuario', error: error.message });
-    }
-});
-
-// Función para generar el resumen del reporte
-function generarResumen(data) {
-    if (!data || data.length === 0) {
-        return 'No se encontraron incidencias en el período seleccionado.';
-    }
-
-    const conteoPorTipo = {};
-    let totalIncidencias = 0;
-
-    data.forEach(incidencia => {
-        const tipo = incidencia.type;
-        conteoPorTipo[tipo] = (conteoPorTipo[tipo] || 0) + 1;
-        totalIncidencias++;
-    });
-
-    let resumen = `Se encontraron ${totalIncidencias} incidencias en el período seleccionado. Detalles: `;
-    for (const tipo in conteoPorTipo) {
-        resumen += `${tipo}: ${conteoPorTipo[tipo]}, `;
-    }
-    return resumen.slice(0, -2) + '.';
-}
-
-// Ruta para obtener el reporte de incidencias
-app.get('/api/reporte-incidencias', authenticateJWT, async (req, res) => {
-    const { tipoError, fechaInicio, fechaFin } = req.query;
-
-    console.log('Parámetros de la consulta recibidos:', req.query);
-
-    let query = {};
-
-    if (tipoError) {
-        query.type = tipoError;
-    }
-
-    if (fechaInicio && fechaFin) {
-        query.createdAt = {
-            $gte: new Date(fechaInicio),
-            $lte: new Date(fechaFin),
-        };
-    } else if (fechaInicio) {
-        query.createdAt = { $gte: new Date(fechaInicio) };
-    } else if (fechaFin) {
-        query.createdAt = { $lte: new Date(fechaFin) };
-    }
-
-    console.log('Consulta MongoDB construida:', query);
-
-    try {
-        const incidencias = await Incidence.find(query);
-        console.log('Incidencias encontradas:', incidencias);
-
-        const resumen = generarResumen(incidencias);
-
-        const nuevoReporte = new Reporte({
-            fechaGeneracion: new Date(),
-            totalIncidencias: incidencias.length,
-            resumenErrores: Object.entries(incidencias.reduce((acc, curr) => {
-                acc[curr.type] = (acc[curr.type] || 0) + 1;
-                return acc;
-            }, {})).map(([error, cantidad]) => ({ error, cantidad })),
-            detalles: incidencias
-        });
-        await nuevoReporte.save();
-
-        res.status(200).json({ incidencias, resumen });
-    } catch (error) {
-        console.error('Error al obtener el reporte de incidencias:', error.message);
-        res.status(500).json({ message: 'Error al obtener el reporte: ' + error.message });
-    }
-});
-
-app.get('/api/reporte-incidencias/download', authenticateJWT, async (req, res) => {
-    const { tipoError, fechaInicio, fechaFin } = req.query;
-
-    let query = {};
-
-    if (tipoError) {
-        query.type = tipoError;
-    }
-
-    if (fechaInicio && fechaFin) {
-        query.createdAt = {
-            $gte: new Date(fechaInicio),
-            $lte: new Date(fechaFin),
-        };
-    } else if (fechaInicio) {
-        query.createdAt = { $gte: new Date(fechaInicio) };
-    } else if (fechaFin) {
-        query.createdAt = { $lte: new Date(fechaFin) };
-    }
-
-    try {
-        const incidencias = await Incidence.find(query);
-
-        let csvContent = "Tipo de Incidencia,Descripción,Nombre Ejecutivo,Fecha,Hora,Comentarios\n";
-        incidencias.forEach(incidencia => {
-            const row = [
-                incidencia.type,
-                incidencia.description.replace(/,/g, ""),
-                incidencia.executiveName,
-                new Date(incidencia.createdAt).toLocaleDateString(),
-                new Date(incidencia.updatedAt).toLocaleTimeString(),
-                incidencia.comments ? incidencia.comments.replace(/,/g, "") : "",
-            ];
-            csvContent += row.join(",") + "\n";
+        const nuevoReporteEstadisticas = new Estadisticas({
+            estadisticas: 'reporte_errores_comunes',
+            supervisor_ud: usuarioGeneraReporte, // Usamos supervisor_ud para almacenar el nombre del usuario que generó el reporte
+            detalles: reporteErrores, // Guardamos el detalle del reporte
+            createdAt: new Date()
         });
 
-        const buffer = Buffer.from(csvContent, 'utf-8');
-        const stream = new Readable();
-        stream.push(buffer);
-        stream.push(null);
-
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', 'attachment; filename=reporte_incidencias.csv');
-        stream.pipe(res);
-
+        await nuevoReporteEstadisticas.save();
+        res.status(200).json({ message: 'Reporte de errores guardado exitosamente.' });
 
     } catch (error) {
-        console.error('Error al generar el reporte CSV:', error.message);
-        res.status(500).json({ message: 'Error al generar el reporte CSV: ' + error.message });
+        console.error('Error al guardar el reporte de errores:', error.message);
+        res.status(500).json({ message: 'Error al guardar el reporte de errores.' });
     }
 });
 
