@@ -94,7 +94,7 @@ export default {
       }
 
       try {
-        const response = await axios.post('https://proyectodetitulo.onrender.com/api/notify-supervisor-reset', {
+        await axios.post('https://proyectodetitulo.onrender.com/api/notify-supervisor-reset', {
           userInfo: this.resetInfo,
         });
         alert('Se ha registrado tu solicitud. Contacta a tu supervisor.');

@@ -439,6 +439,100 @@ app.put('/api/incidencias/:id', authenticateJWT, async (req, res) => {
     }
 });
 
+// server.js
+// ... (tus imports y modelos)
+
+// ... (tu ruta POST /api/notify-supervisor-reset)
+
+// Ruta para obtener el CONTEO de las solicitudes de restablecimiento (solo para supervisores)
+app.get('/api/reset-requests/count', authenticateJWT, async (req, res) => {
+    if (req.user.rol !== 'supervisor') {
+        return res.status(403).json({ message: 'Acceso prohibido' });
+    }
+    try {
+        const count = await TipoError.countDocuments({ tipoerror: 'solicitud_reset_password' });
+        res.status(200).json({ count });
+    } catch (error) {
+        console.error('Error al obtener el conteo de solicitudes de reset:', error.message);
+        res.status(500).json({ message: 'Error al obtener el conteo de solicitudes de reset.' });
+    }
+});
+
+// server.js
+
+// Ruta para crear un nuevo tipo de falla
+app.post('/api/tipos-fallas', authenticateJWT, async (req, res) => {
+    if (req.user.rol !== 'supervisor') {
+        return res.status(403).json({ message: 'Acceso prohibido' });
+    }
+    const { tipodefalla } = req.body;
+    try {
+        const nuevoTipoFalla = new TipoFalla({
+            tipodefalla,
+            supervisor_ud: req.user.nombre,
+            createdAt: new Date()
+        });
+        await nuevoTipoFalla.save();
+        res.status(201).json({ message: 'Tipo de falla creado exitosamente', nuevoTipoFalla });
+    } catch (error) {
+        console.error('Error al crear el tipo de falla:', error.message);
+        res.status(500).json({ message: 'Error al crear el tipo de falla' });
+    }
+});
+
+// Ruta para obtener todos los tipos de fallas
+app.get('/api/tipos-fallas', authenticateJWT, async (req, res) => {
+    try {
+        const tiposFallas = await TipoFalla.find();
+        res.status(200).json(tiposFallas);
+    } catch (error) {
+        console.error('Error al obtener los tipos de fallas:', error.message);
+        res.status(500).json({ message: 'Error al obtener los tipos de fallas' });
+    }
+});
+
+
+
+
+
+
+//guarda la solicitud de restablecimiento de contraseña
+app.post('/api/notify-supervisor-reset', async (req, res) => {
+    const { userInfo } = req.body;
+
+    try {
+        const newForgotPasswordRequest = new TipoError({
+            tipoerror: 'solicitud_reset_password',
+            supervisor_ud: 'pendiente', // Puedes usar un valor por defecto o el nombre de un supervisor específico si lo tienes
+            descripcion: `Usuario/Correo: ${userInfo}`,
+            createdAt: new Date()
+        });
+
+        await newForgotPasswordRequest.save();
+        res.status(200).json({ message: 'Se ha registrado tu solicitud. Contacta a tu supervisor.' });
+
+    } catch (error) {
+        console.error('Error al registrar la solicitud de reset:', error.message);
+        res.status(500).json({ message: 'Error al registrar la solicitud de reset.' });
+    }
+});
+
+// Ruta para obtener las solicitudes de restablecimiento (solo para supervisores - ¡protégela con authenticateJWT!)
+app.get('/api/reset-requests', authenticateJWT, async (req, res) => {
+    if (req.user.rol !== 'supervisor') {
+        return res.status(403).json({ message: 'Acceso prohibido' });
+    }
+    try {
+        const resetRequests = await TipoError.find({ tipoerror: 'solicitud_reset_password' });
+        res.status(200).json(resetRequests);
+    } catch (error) {
+        console.error('Error al obtener las solicitudes de reset:', error.message);
+        res.status(500).json({ message: 'Error al obtener las solicitudes de reset.' });
+    }
+});
+
+// ... (el resto de tus rutas)
+
 // Ruta para eliminar una incidencia (solo para el ejecutivo que la creó)
 app.delete('/api/incidencias/:id', authenticateJWT, async (req, res) => {
     try {
