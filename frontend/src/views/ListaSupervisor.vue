@@ -14,7 +14,7 @@
               <th>Nombre Ejecutivo</th>
               <th>Fecha</th>
               <th>Hora</th>
-              <th>Comentarios</th>
+              <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -32,8 +32,12 @@
               <td>{{ new Date(incidencia.createdAt).toLocaleDateString() }}</td>
               <td>{{ new Date(incidencia.updatedAt).toLocaleTimeString() }}</td>
               <td>
-                <textarea v-if="editingId === incidencia._id" v-model="editedIncidencia.comments"></textarea>
-                <span v-else>{{ incidencia.comments }}</span>
+                <select v-if="editingId === incidencia._id" v-model="editedIncidencia.estado">
+                  <option value="pendiente">Pendiente</option>
+                  <option value="en proceso">En Proceso</option>
+                  <option value="resuelta">Resuelta</option>
+                </select>
+                <span v-else>{{ incidencia.estado }}</span>
               </td>
               <td>
                 <div v-if="editingId === incidencia._id">
@@ -57,6 +61,7 @@
 </template>
 
 <script>
+// listasupervisor.vue
 import axios from 'axios';
 
 export default {

@@ -180,7 +180,6 @@ export default {
 </script>
 
 <style scoped>
-/* administraciondeusuarios.vue */
 /* Estilos del formulario de administración */
 .admin-container {
   padding: 20px;

@@ -25,15 +25,14 @@
         </div>
         <button @click="generarReporte" class="generate-report-button">Generar Reporte</button>
         <button @click="volverAlMenuPrincipal" class="back-to-dashboard-button">Volver al Menú Principal</button>
-        <button @click="descargarGrafico" class="download-chart-button" v-if="reporteGenerado">Descargar Gráfico</button>
-        </div>
+        <button @click="descargarGraficoPDF" class="download-chart-button" v-if="reporteGenerado && chartData">Descargar Reporte PDF</button>
+      </div>
       <div class="report-section">
         <div v-if="reporteGenerado">
           <h3>Resumen del Reporte</h3>
           <p>{{ resumen }}</p>
           <div class="chart-card" v-if="chartData">
             <canvas ref="graficoCanvas" width="400" height="400"></canvas>
-
           </div>
           <div v-else>
             <p>No hay datos para mostrar en el gráfico con los filtros seleccionados.</p>
@@ -48,9 +47,10 @@
 </template>
 
 <script>
-// graficossupervisor.vue
 import axios from 'axios';
 import Chart from 'chart.js/auto';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export default {
   name: 'GraficosSupervisor',
@@ -100,9 +100,9 @@ export default {
         alert('Error al generar el reporte');
       }
     },
-    procesarDatos(data) { // <-- Corregido para recibir el objeto completo
+    procesarDatos(data) {
       console.log('Datos recibidos para procesar:', data);
-      if (!data || !data.incidencias || data.incidencias.length === 0) { // <-- Accedemos a data.incidencias
+      if (!data || !data.incidencias || data.incidencias.length === 0) {
         this.resumen = 'No se encontraron incidencias con los filtros seleccionados.';
         this.chartData = null;
         if (this.chartInstance) {
@@ -114,7 +114,7 @@ export default {
       const conteoPorTipo = {};
       let totalIncidencias = 0;
 
-      data.incidencias.forEach(incidencia => { // <-- Iteramos sobre data.incidencias
+      data.incidencias.forEach(incidencia => {
         const tipo = incidencia.type;
         conteoPorTipo[`${tipo}`] = (conteoPorTipo[`${tipo}`] || 0) + 1;
         totalIncidencias++;
@@ -171,8 +171,6 @@ export default {
         this.renderChart();
       });
     },
-
-
     renderChart() {
       const canvas = this.$refs.graficoCanvas;
       console.log('Elemento canvas en renderChart:', canvas);
@@ -188,8 +186,7 @@ export default {
           data: this.chartData,
           options: {
             responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
+            maintainAspectRatio: false,plugins: {
               legend: {
                 position: 'top'
               },
@@ -201,9 +198,9 @@ export default {
                       label += ': ';
                     }
                     if (context.parsed.y !== null) {
-                      label += context.parsed.y + ' (' + context.dataset.data[`${context.dataIndex}`] + ')';
-                      if (context.dataset.porcentajes && context.dataset.porcentajes[`${context.dataIndex}`]) {
-                        label += ' - ' + context.dataset.porcentajes[`${context.dataIndex}`];
+                      label += context.parsed.y + ' (' + context.dataset.data[context.dataIndex] + ')';
+                      if (context.dataset.porcentajes && context.dataset.porcentajes[context.dataIndex]) {
+                        label += ' - ' + context.dataset.porcentajes[context.dataIndex];
                       }
                     }
                     return label;
@@ -219,20 +216,32 @@ export default {
     volverAlMenuPrincipal() {
       this.$router.push('/dashboard-supervisor');
     },
-    descargarGrafico() {
-      const canvas = this.$refs.graficoCanvas;
-      if (!canvas) {
-        alert('No hay gráfico para descargar.');
-        return;
-      }
+    async descargarGraficoPDF() {
+      const chartCanvas = this.$refs.graficoCanvas;
+      if (!chartCanvas) return;
 
-      const dataURL = canvas.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = dataURL;
-      a.download = 'reporte_grafico.png';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      try {
+        const canvas = await html2canvas(chartCanvas);
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgProps= pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+        // Agregar total de incidencias y desglose
+        pdf.setFontSize(12);
+        pdf.text(`Total de Incidencias: ${this.chartData.datasets[0].data.reduce((a, b) => a + b, 0)}`, 10, pdfHeight + 10);
+        this.chartData.labels.forEach((label, index) => {
+          pdf.text(`${label}: ${this.chartData.datasets[0].data[index]}`, 10, pdfHeight + 20 + (index * 10));
+        });
+
+        pdf.save('reporte_incidencias.pdf');
+      } catch (error) {
+        console.error('Error al descargar el gráfico como PDF:', error);
+        alert('Error al descargar el gráfico como PDF.');
+      }
     }
   },
   beforeUnmount() {
@@ -240,7 +249,6 @@ export default {
       this.chartInstance.destroy();
     }
   },
-
 };
 </script>
 
@@ -266,7 +274,9 @@ export default {
 .report-layout {
   display: flex;
   gap: 20px;
+  /* Espacio entre los dos cuadros */
   align-items: flex-start;
+  /* Alinea los elementos en la parte superior */
 }
 
 .filter-section {
@@ -275,10 +285,12 @@ export default {
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 300px;
+  /* Ancho fijo para la sección de filtros */
 }
 
 .report-section {
   flex-grow: 1;
+  /* La sección de reporte ocupa el espacio restante */
   background-color: white;
   padding: 20px;
   border-radius: 5px;
@@ -318,6 +330,7 @@ export default {
   transition: background-color 0.3s ease;
   margin-top: 10px;
   display: block;
+  /* Para que los botones ocupen el ancho completo */
   width: 100%;
   box-sizing: border-box;
 }
@@ -330,6 +343,7 @@ export default {
 
 .back-to-dashboard-button {
   background-color: #333;
+  /* Un color diferente para distinguirlo */
 }
 
 .back-to-dashboard-button:hover {
@@ -343,13 +357,18 @@ export default {
   border-radius: 5px;
   text-align: center;
   max-width: 100%;
+  /* Asegura que no sea más ancho que su contenedor */
   overflow: auto;
+  /* Permite scroll si el contenido es demasiado grande (por precaución) */
 }
 
 .chart-card canvas {
   width: 100% !important;
+  /* Hace que el canvas ocupe el ancho del contenedor */
   height: auto !important;
+  /* Mantiene la proporción */
   max-height: 400px;
+  /* O ajusta la altura máxima según lo necesites */
 }
 
 .download-chart-button {

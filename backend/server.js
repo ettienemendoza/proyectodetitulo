@@ -185,7 +185,8 @@ app.post('/api/incidencias', authenticateJWT, async (req, res) => {
         estado: estado || 'pendiente'
     });
 
-    try {await newIncidence.save();
+    try {
+        await newIncidence.save();
         res.status(201).json({ message: 'Incidencia registrada exitosamente' });
     } catch (error) {
         console.error('Error al guardar la incidencia:', error.message);
@@ -243,9 +244,198 @@ app.post('/api/guardar-reporte-errores', authenticateJWT, async (req, res) => {
     }
 });
 
-// ... (el resto de tus rutas: delete, usuarios, reporte-incidencias, download)
+app.get('/api/usuarios', authenticateJWT, async (req, res) => {
+    try {
+        const usuarios = await Usuario.find();
+        res.status(200).json(usuarios);
+    } catch (error) {
+        console.error('Error al obtener los usuarios:', error.message);
+        res.status(500).json({ message: 'Error al obtener los usuarios', error: error.message });
+    }
+});
+
+// Ruta para registrar un nuevo usuario
+app.post('/api/usuarios', authenticateJWT, async (req, res) => {
+    const { nombre, contrasena, cargo, email } = req.body;
+
+    try {
+        const nuevoUsuario = new Usuario({ nombre, contrasena, cargo, email });
+        await nuevoUsuario.save();
+        res.status(201).json({ message: 'Usuario creado exitosamente' });
+    } catch (error) {
+        console.error('Error al crear el usuario:', error.message);
+        res.status(500).json({ message: 'Error al crear el usuario', error: error.message });
+    }
+});
+
+// Ruta para obtener un usuario por ID (si es necesario)
+app.get('/api/usuarios/:id', authenticateJWT, async (req, res) => {
+    try {
+        const usuario = await Usuario.findById(req.params.id);
+        if (!usuario) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        res.status(200).json(usuario);
+    } catch (error) {
+        console.error('Error al obtener el usuario:', error.message);
+        res.status(500).json({ message: 'Error al obtener el usuario', error: error.message });
+    }
+});
+
+// Ruta para actualizar un usuario
+app.put('/api/usuarios/:id', authenticateJWT, async (req, res) => {
+    try {
+        const usuario = await Usuario.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!usuario) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        res.status(200).json({ message: 'Usuario actualizado exitosamente', usuario });
+    } catch (error) {
+        console.error('Error al actualizar el usuario:', error.message);
+        res.status(500).json({ message: 'Error al actualizar el usuario', error: error.message });
+    }
+});
+
+// Ruta para eliminar un usuario
+app.delete('/api/usuarios/:id', authenticateJWT, async (req, res) => {
+    try {
+        const usuario = await Usuario.findByIdAndDelete(req.params.id);
+        if (!usuario) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        res.status(200).json({ message: 'Usuario eliminado exitosamente' });
+    } catch (error) {
+        console.error('Error al eliminar el usuario:', error.message);
+        res.status(500).json({ message: 'Error al eliminar el usuario', error: error.message });
+    }
+});
+
+// Ruta para obtener el reporte de incidencias
+app.get('/api/reporte-incidencias', authenticateJWT, async (req, res) => {
+    const { tipoError, fechaInicio, fechaFin } = req.query;
+
+    console.log('Parámetros de la consulta recibidos:', req.query);
+
+    let query = {};
+
+    if (tipoError) {
+        query.type = tipoError;
+    }
+
+    if (fechaInicio && fechaFin) {
+        query.createdAt = {
+            $gte: new Date(fechaInicio),
+            $lte: new Date(fechaFin),
+        };
+    } else if (fechaInicio) {
+        query.createdAt = { $gte: new Date(fechaInicio) };
+    } else if (fechaFin) {
+        query.createdAt = { $lte: new Date(fechaFin) };
+    }
+
+    console.log('Consulta MongoDB construida:', query);
+
+    try {
+        const incidencias = await Incidence.find(query);
+        console.log('Incidencias encontradas:', incidencias);
+
+        // Generar el resumen
+        const resumen = generarResumen(incidencias);
+
+        // Almacenar el reporte en la nueva colección
+        const nuevoReporte = new Reporte({
+            fechaGeneracion: new Date(),
+            totalIncidencias: incidencias.length,
+            resumenErrores: Object.entries(incidencias.reduce((acc, curr) => {
+                acc[curr.type] = (acc[curr.type] || 0) + 1;
+                return acc;
+            }, {})).map(([error, cantidad]) => ({ error, cantidad })),
+            detalles: incidencias
+        });
+        await nuevoReporte.save();
+
+        res.status(200).json({ incidencias, resumen }); // Enviar el resumen en la respuesta
+    } catch (error) {
+        console.error('Error al obtener el reporte de incidencias:', error.message);
+        res.status(500).json({ message: 'Error al obtener el reporte', error: error.message });
+    }
+});
+
+app.get('/api/reporte-incidencias/download', authenticateJWT, async (req, res) => {
+    const { tipoError, fechaInicio, fechaFin } = req.query;
+
+    let query = {};
+
+    if (tipoError) {
+        query.type = tipoError;
+    }
+
+    if (fechaInicio && fechaFin) {
+        query.createdAt = {
+            $gte: new Date(fechaInicio),
+            $lte: new Date(fechaFin),
+        };
+    } else if (fechaInicio) {
+        query.createdAt = { $gte: new Date(fechaInicio) };
+    } else if (fechaFin) {
+        query.createdAt = { $lte: new Date(fechaFin) };
+    }
+
+    try {
+        const incidencias = await Incidence.find(query);
+
+        // Generar el CSV
+        let csvContent = "Tipo de Incidencia,Descripción,Nombre Ejecutivo,Fecha,Hora,Estado\n";
+        incidencias.forEach(incidencia => {
+            const row = [
+                incidencia.type,
+                incidencia.description.replace(/,/g, ""),
+                incidencia.executiveName,
+                new Date(incidencia.createdAt).toLocaleDateString(),
+                new Date(incidencia.updatedAt).toLocaleTimeString(),
+                incidencia.estado ? incidencia.estado.replace(/,/g, "") : "",
+            ];
+            csvContent += row.join(",") + "\n";
+        });
+
+        // Enviar el CSV como descarga
+        const buffer = Buffer.from(csvContent, 'utf-8');
+        const stream = new Readable();
+        stream.push(buffer);
+        stream.push(null);
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=reporte_incidencias.csv');
+        stream.pipe(res);
+
+    } catch (error) {
+        console.error('Error al generar el reporte CSV:', error.message);
+        res.status(500).json({ message: 'Error al generar el reporte CSV', error: error.message });
+    }
+});
 
 // Iniciar el servidor
 app.listen(3000, () => {
     console.log('Servidor corriendo en http://localhost:3000');
 });
+
+function generarResumen(data) {
+    if (!data || data.length === 0) {
+        return 'No se encontraron incidencias en el período seleccionado.';
+    }
+
+    const conteoPorTipo = {};
+    let totalIncidencias = 0;
+
+    data.forEach(incidencia => {
+        const tipo = incidencia.type;
+        conteoPorTipo[tipo] = (conteoPorTipo[tipo] || 0) + 1;
+        totalIncidencias++;
+    });
+
+    let resumen = `Se encontraron ${totalIncidencias} incidencias en el período seleccionado. Detalles: `;
+    for (const tipo in conteoPorTipo) {
+        resumen += `${tipo}: ${conteoPorTipo[tipo]}, `;
+    }
+    return resumen.slice(0, -2) + '.';
+}
