@@ -23,8 +23,6 @@
 </template>
 
 <script>
-// loginpage.vue
-import axios from 'axios';
 
 export default {
   data() {
@@ -50,8 +48,6 @@ export default {
 </script>
 
 <style scoped>
-/* loginpage.vue */
-/* ... (tus estilos existentes) */
 
 .reset-message {
   margin-top: 20px;
