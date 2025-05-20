@@ -3,11 +3,11 @@
     <h2>Solicitudes de Restablecimiento de Contraseña</h2>
     <div v-if="resetRequests.length > 0">
       <ul>
-        <li v-for="request in resetRequests" :key="request._id">
-          <strong>Usuario/Correo:</strong> {{ request.descripcion }} -
-          <strong>Fecha/Hora:</strong> {{ new Date(request.createdAt).toLocaleString() }}
-          <button @click="marcarComoAtendido(request._id)">Marcar como Atendido</button>
-        </li>
+        <<li>
+            <strong>Usuario/Correo:</strong> {{ request.descripcion.replace('Usuario/Correo: ', '') }} -
+            <strong>Fecha/Hora:</strong> {{ new Date(request.createdAt).toLocaleString() }}
+            <button @click="marcarComoAtendido(request._id)">Marcar como Atendido</button>
+          </li>
       </ul>
     </div>
     <div v-else>

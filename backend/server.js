@@ -281,6 +281,25 @@ app.delete('/api/usuarios/:id', authenticateJWT, async (req, res) => {
     }
 });
 
+//uta para eliminar la solicitud de restablecimiento
+app.delete('/api/reset-requests/:id', authenticateJWT, async (req, res) => {
+    if (req.user.rol !== 'supervisor') {
+        return res.status(403).json({ message: 'Acceso prohibido' });
+    }
+    try {
+        const requestId = req.params.id;
+        const result = await TipoError.findByIdAndDelete(requestId);
+        if (result) {
+            res.status(200).json({ message: 'Solicitud de restablecimiento marcada como atendida.' });
+        } else {
+            res.status(404).json({ message: 'Solicitud de restablecimiento no encontrada.' });
+        }
+    } catch (error) {
+        console.error('Error al marcar la solicitud como atendida:', error.message);
+        res.status(500).json({ message: 'Error al marcar la solicitud como atendida.' });
+    }
+});
+
 // Ruta para obtener el reporte de incidencias
 app.get('/api/reporte-incidencias', authenticateJWT, async (req, res) => {
     const { tipoError, fechaInicio, fechaFin } = req.query;

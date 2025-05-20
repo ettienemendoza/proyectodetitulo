@@ -14,7 +14,7 @@
           <h3>Lista de Incidencias</h3>
         </div>
         <div class="option-card relative" @click="irAResetRequests">
-          <h3>Solicitudes de Reset</h3>
+          <h3>Solicitudes</h3>
           <span v-if="resetRequestCount > 0" class="notification-badge">{{ resetRequestCount }}</span>
         </div>
         <div class="option-card" @click="irAAdministracion">
@@ -86,7 +86,6 @@ export default {
 </script>
 
 <style scoped>
-/* dashboardsupervisor.vue */
 .supervisor-container {
   text-align: center;
   padding: 20px;
@@ -99,7 +98,40 @@ export default {
   position: relative; /* Necesario para el z-index del overlay */
 }
 
-/* ... (tus estilos existentes) */
+.background-image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('@/assets/supervisor.jpg'); /* Ruta a tu imagen */
+  background-size: cover;
+  background-position: center top;
+  filter: grayscale(100%); /* Aplica el filtro solo a la capa de la imagen */
+  z-index: -1; /* Envía la capa de la imagen detrás del contenedor principal */
+  opacity: 0.5; /* Ajusta la opacidad para que sea más visible */
+}
+
+.content {
+  position: relative; /* Asegura que el contenido esté encima del overlay */
+  z-index: 0; /* Coloca el contenido encima de la imagen de fondo */
+}
+
+.supervisor-header {
+  background-color: #b81e1e; /* Color de fondo rojo sólido */
+  color: white;
+  padding: 20px;
+  margin-bottom: 30px;
+  text-align: center;
+  z-index: 1; /* Asegura que esté encima del content */
+}
+
+.supervisor-header h1,
+.supervisor-header h3 {
+  background-color: transparent;
+  padding: 5px 0;
+  margin: 0;
+}
 
 .supervisor-options {
   display: flex;
@@ -108,6 +140,52 @@ export default {
   margin-bottom: 30px;
   z-index: 1; /* Asegura que esté encima del content */
   position: relative; /* Para posicionar el badge */
+}
+
+.option-card {
+  background-color: #b81e1e; /* Color de fondo rojo sólido */
+  color: white;
+  padding: 30px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 200px;
+  z-index: 1; /* Asegura que esté encima del content */
+}
+
+.option-card:hover {
+  background-color: #8c1414;
+}
+
+h1 {
+  font-size: 2.5em;
+  margin-bottom: 5px;
+}
+
+h3 {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.logout-button {
+  background-color: #333;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.1em;
+  transition: background-color 0.3s;
+  z-index: 1; /* Asegura que esté encima del content */
+}
+
+.logout-button:hover {
+  background-color: #555;
+}
+
+.logout-icon {
+  margin-left: 5px;
+  font-size: 1.2em;
 }
 
 .notification-badge {
