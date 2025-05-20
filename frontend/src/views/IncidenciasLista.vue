@@ -9,38 +9,7 @@
       <h2>Lista de Incidencias</h2>
 
       <div class="filter-container">
-        <h3>Filtrar Incidencias</h3>
-        <div class="filter-group">
-          <label for="tipoError">Tipo de Error:</label>
-          <select id="tipoError" v-model="filtro.type">
-            <option value="">Todos</option>
-            <option value="Biometría">Biometría</option>
-            <option value="Fallo de preguntas">Fallo de preguntas</option>
-            <option value="Problemas en el sistema">Problemas en el sistema</option>
-            <option value="Sin preguntas">Sin preguntas</option>
-            <option value="Otros">Otros</option>
-          </select>
         </div>
-        <div class="filter-group">
-          <label for="estado">Estado:</label>
-          <select id="estado" v-model="filtro.estado">
-            <option value="">Todos</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="en proceso">En Proceso</option>
-            <option value="resuelta">Resuelta</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="fechaInicio">Fecha Inicio:</label>
-          <input type="date" id="fechaInicio" v-model="filtro.fechaInicio" />
-        </div>
-        <div class="filter-group">
-          <label for="fechaFin">Fecha Fin:</label>
-          <input type="date" id="fechaFin" v-model="filtro.fechaFin" />
-        </div>
-        <button @click="obtenerIncidencias" class="filter-button">Aplicar Filtros</button>
-        <button @click="generarReporteErroresComunes" class="report-button">Generar Reporte de Errores</button>
-      </div>
 
       <div class="tabla-container">
         <table class="incidencias-tabla">
@@ -52,20 +21,39 @@
               <th>Fecha</th>
               <th>Hora</th>
               <th>Estado</th>
-              <th v-if="usuario.rol === 'supervisor'">Acciones</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="incidencia in incidenciasFiltradas" :key="incidencia._id">
-              <td>{{ incidencia.type }}</td>
-              <td>{{ incidencia.description }}</td>
+              <td>
+                <input v-if="editingId === incidencia._id" v-model="editedIncidencia.type" />
+                <span v-else>{{ incidencia.type }}</span>
+              </td>
+              <td>
+                <textarea v-if="editingId === incidencia._id" v-model="editedIncidencia.description"></textarea>
+                <span v-else>{{ incidencia.description }}</span>
+              </td>
               <td>{{ incidencia.executiveName }}</td>
               <td>{{ new Date(incidencia.createdAt).toLocaleDateString() }}</td>
               <td>{{ new Date(incidencia.updatedAt).toLocaleTimeString() }}</td>
-              <td>{{ incidencia.estado }}</td>
-              <td v-if="usuario.rol === 'supervisor'">
-                <button @click="verDetalleIncidencia(incidencia._id)" class="edit-button">Editar</button>
-                <button @click="borrarIncidencia(incidencia._id)" class="delete-button">Borrar</button>
+              <td>
+                <span v-if="editingId !== incidencia._id">{{ incidencia.estado }}</span>
+                <select v-else v-model="editedIncidencia.estado">
+                  <option value="pendiente">Pendiente</option>
+                  <option value="en proceso">En Proceso</option>
+                  <option value="resuelta">Resuelta</option>
+                </select>
+              </td>
+              <td>
+                <div v-if="editingId === incidencia._id">
+                  <button @click="guardarIncidencia(incidencia._id)" class="save-button">Guardar</button>
+                  <button @click="cancelarEdicion" class="cancel-button">Cancelar</button>
+                </div>
+                <div v-else>
+                  <button v-if="usuario.rol === 'supervisor' || usuario.nombre === incidencia.executiveName" @click="editarIncidencia(incidencia)" class="edit-button">Editar</button>
+                  <button v-if="usuario.rol === 'supervisor' || usuario.nombre === incidencia.executiveName" @click="borrarIncidencia(incidencia._id)" class="delete-button">Borrar</button>
+                </div>
               </td>
             </tr>
             <tr v-if="incidenciasFiltradas.length === 0">
@@ -91,7 +79,7 @@
 </template>
 
 <script>
-
+// incidenciaslista.vue
 import axios from 'axios';
 
 export default {
@@ -107,6 +95,8 @@ export default {
       },
       reporteErroresComunes: [],
       reporteGenerado: false,
+      editingId: null,
+      editedIncidencia: {},
     };
   },
   mounted() {
@@ -176,19 +166,57 @@ export default {
         },
       };
 
-      if (confirm('¿Estás seguro de que deseas eliminar esta incidencia?')) {
-        try {
-          await axios.delete(`https://proyectodetitulo.onrender.com/api/incidencias/${id}`, config);
-          console.log('Incidencia eliminada');
-          alert('Incidencia eliminada exitosamente');
-          this.obtenerIncidencias(); // Recargar la lista después de eliminar
-        } catch (error) {
-          console.error('Error al eliminar la incidencia:', error);
-          alert('Error al eliminar la incidencia');
-        }
+      try {
+        await axios.delete(`https://proyectodetitulo.onrender.com/api/incidencias/${id}`, config);
+        console.log('Incidencia eliminada');
+        alert('Incidencia eliminada exitosamente');
+        this.obtenerIncidencias(); // Recargar la lista después de eliminar
+      } catch (error) {
+        console.error('Error al eliminar la incidencia:', error);
+        alert('Error al eliminar la incidencia');
+      } finally {
+        this.editingId = null;
       }
     },
-    async generarReporteErroresComunes() { // Ahora es un método async
+    editarIncidencia(incidencia) {
+      this.editingId = incidencia._id;
+      this.editedIncidencia = { ...incidencia };
+    },
+    cancelarEdicion() {
+      this.editingId = null;
+      this.editedIncidencia = {};
+    },
+    async guardarIncidencia(id) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Token no proporcionado');
+        alert('Por favor, inicie sesión');
+        this.$router.push('/');
+        return;
+      }
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      try {
+        const response = await axios.put(
+          `https://proyectodetitulo.onrender.com/api/incidencias/${id}`,
+          this.editedIncidencia,
+          config
+        );
+        console.log('Incidencia actualizada:', response.data);
+        alert('Incidencia actualizada exitosamente');
+        this.editingId = null;
+        this.obtenerIncidencias();
+      } catch (error) {
+        console.error('Error al actualizar la incidencia:', error);
+        alert('Error al actualizar la incidencia');
+      }
+    },
+    async generarReporteErroresComunes() {
       const erroresComunes = this.incidenciasFiltradas.reduce((acc, incidencia) => {
         acc[incidencia.type] = (acc[incidencia.type] || 0) + 1;
         return acc;
@@ -210,7 +238,7 @@ export default {
           },
         };
         try {
-          const response = await axios.post('https://proyectodetitulo.onrender.com/api/guardar-reporte-errores', { reporteErrores }, config);
+          const response = await axios.post('https://proyectodetititulo.onrender.com/api/guardar-reporte-errores', { reporteErrores }, config);
           console.log('Reporte de errores guardado en el backend:', response.data.message);
           // Puedes mostrar un mensaje al usuario si lo deseas
         } catch (error) {
@@ -235,8 +263,9 @@ export default {
   width: 200px;
   background-color: #b81e1e;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
   padding-top: 200px;
   position: fixed;
   height: 100%;
@@ -249,7 +278,7 @@ export default {
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  margin-top: 10px;
+  margin-bottom: 10px;
   width: 80%;
   text-align: center;
 }
@@ -312,6 +341,34 @@ h2 {
 
 .edit-button:hover {
   background-color: #45a049;
+}
+
+.save-button {
+  background-color: #2196f3;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.save-button:hover {
+  background-color: #1976d2;
+}
+
+.cancel-button {
+  background-color: #ccc;
+  color: #333;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.cancel-button:hover {
+  background-color: #aaa;
 }
 
 .delete-button {

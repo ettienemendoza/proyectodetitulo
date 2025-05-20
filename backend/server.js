@@ -114,36 +114,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-app.post('/api/reset-password', async (req, res) => {
-    const { usuario, email } = req.body;
 
-    try {
-        const user = await Usuario.findOne({ nombre: usuario, email: email });
-        if (!user) {
-            return res.status(404).json({ message: 'Usuario o correo electrónico no encontrados' });
-        }
-
-        const mailOptions = {
-            from: 'tu_correo@gmail.com',
-            to: email,
-            subject: 'Tu Contraseña',
-            text: `Tu contraseña es: ${user.contrasena}\nPor favor, cambia tu contraseña después de iniciar sesión.`
-        };
-
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error('Error al enviar el correo electrónico:', error);
-                return res.status(500).json({ message: 'Error al enviar el correo electrónico: ' + error.message });
-            } else {
-                console.log('Correo electrónico enviado:', info.response);
-                res.status(200).json({ message: 'Contraseña enviada al correo electrónico' });
-            }
-        });
-    } catch (error) {
-        console.error('Error al resetear la contraseña:', error.message);
-        res.status(500).json({ message: 'Error al resetear la contraseña: ' + error.message });
-    }
-});
 
 app.post('/api/login', async (req, res) => {
     const { usuario, contrasena } = req.body;
@@ -439,3 +410,54 @@ function generarResumen(data) {
     }
     return resumen.slice(0, -2) + '.';
 }
+
+
+// Ruta para editar una incidencia (solo para el ejecutivo que la creó)
+app.put('/api/incidencias/:id', authenticateJWT, async (req, res) => {
+    try {
+        const { type, description, estado, otroTipoError } = req.body;
+        const executiveName = req.user.nombre;
+        const incidencia = await Incidence.findById(req.params.id);
+
+        if (!incidencia) {
+            return res.status(404).json({ message: 'Incidencia no encontrada' });
+        }
+
+        // Permitir editar solo al supervisor o al ejecutivo que creó la incidencia
+        if (req.user.rol === 'supervisor' || incidencia.executiveName === executiveName) {
+            incidencia.type = otroTipoError || type || incidencia.type;
+            incidencia.description = description || incidencia.description;
+            incidencia.estado = estado || incidencia.estado;
+            incidencia.updatedAt = Date.now();
+            await incidencia.save();
+            return res.status(200).json({ message: 'Incidencia actualizada exitosamente', incidencia });
+        } else {
+            return res.status(403).json({ message: 'No tienes permiso para editar esta incidencia' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error al actualizar la incidencia', error: error.message });
+    }
+});
+
+// Ruta para eliminar una incidencia (solo para el ejecutivo que la creó)
+app.delete('/api/incidencias/:id', authenticateJWT, async (req, res) => {
+    try {
+        const executiveName = req.user.nombre;
+        const incidencia = await Incidence.findById(req.params.id);
+
+        if (!incidencia) {
+            return res.status(404).json({ message: 'Incidencia no encontrada' });
+        }
+
+        // Permitir eliminar solo al supervisor o al ejecutivo que creó la incidencia
+        if (req.user.rol === 'supervisor' || incidencia.executiveName === executiveName) {
+            await Incidence.findByIdAndDelete(req.params.id);
+            return res.status(200).json({ message: 'Incidencia eliminada exitosamente' });
+        } else {
+            return res.status(403).json({ message: 'No tienes permiso para eliminar esta incidencia' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error al eliminar la incidencia', error: error.message });
+    }
+});
+
