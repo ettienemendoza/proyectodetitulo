@@ -1,18 +1,18 @@
 <template>
   <div class="reset-requests-container">
-    <h2>Solicitudes de Restablecimiento</h2>
-    <button @click="volverAlDashboard" class="back-button">Volver al Dashboard</button>
+    <h2>Solicitudes</h2>
+    <button @click="volverAlDashboard" class="back-button">Volver al Menu Principal</button>
     <div v-if="resetRequests.length > 0">
       <ul>
         <li v-for="request in resetRequests" :key="request._id">
           <strong>Usuario/Correo:</strong> {{ request.descripcion ? request.descripcion.replace('Usuario/Correo: ', '') : 'No disponible' }} -
           <strong>Fecha/Hora:</strong> {{ new Date(request.createdAt).toLocaleString() }}
-          <button @click="marcarComoAtendido(request._id)">Marcar como Atendido</button>
+          <button @click="marcarComoAtendido(request._id)" class="atendido-button">Marcar como Atendido</button>
         </li>
       </ul>
     </div>
     <div v-else>
-      <p>No hay solicitudes de restablecimiento pendientes.</p>
+      <p>No hay solicitudes pendientes.</p>
     </div>
   </div>
 </template>
@@ -59,6 +59,7 @@ export default {
           await axios.delete(`https://proyectodetitulo.onrender.com/api/reset-requests/${requestId}`, config);
           this.obtenerSolicitudes(); // Recargar la lista después de marcar como atendido
           alert('Solicitud marcada como atendida.');
+          this.volverAlDashboard(); // Volver al dashboard después de marcar
         } catch (error) {
           console.error('Error al marcar como atendido:', error);
           alert('Error al marcar la solicitud como atendida.');
@@ -120,8 +121,8 @@ li:last-child {
   border-bottom: none;
 }
 
-button {
-  background-color: #007bff;
+.atendido-button {
+  background-color: #d9534f; /* Rojo */
   color: white;
   padding: 8px 12px;
   border: none;
@@ -130,7 +131,7 @@ button {
   font-size: 0.9em;
 }
 
-button:hover {
-  background-color: #0056b3;
+.atendido-button:hover {
+  background-color: #c9302c;
 }
 </style>

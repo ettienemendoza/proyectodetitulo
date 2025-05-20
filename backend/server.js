@@ -522,7 +522,7 @@ app.post('/api/notify-supervisor-reset', async (req, res) => {
     try {
         const newForgotPasswordRequest = new TipoError({
             tipoerror: 'solicitud_reset_password',
-            supervisor_ud: 'pendiente', // Puedes usar un valor por defecto o el nombre de un supervisor específico si lo tienes
+            supervisor_ud: 'pendiente',
             descripcion: `Usuario/Correo: ${userInfo}`,
             createdAt: new Date()
         });
@@ -531,8 +531,7 @@ app.post('/api/notify-supervisor-reset', async (req, res) => {
         res.status(200).json({ message: 'Se ha registrado tu solicitud. Contacta a tu supervisor.' });
 
     } catch (error) {
-        console.error('Error al registrar la solicitud de reset:', error.message);
-        res.status(500).json({ message: 'Error al registrar la solicitud de reset.' });
+        // ...
     }
 });
 
