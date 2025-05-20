@@ -6,6 +6,7 @@ import IncidenciasLista from '../views/IncidenciasLista.vue';
 import AdministracionUsuarios from '../views/AdministracionUsuarios.vue';
 import ListaSupervisor from '../views/ListaSupervisor.vue';
 import GraficosSupervisor from '../views/GraficosSupervisor.vue'; 
+import ResetRequests from '../views/ResetRequests.vue';
 
 const routes = [
   { path: '/', component: LoginPage },
@@ -15,6 +16,7 @@ const routes = [
   { path: '/administracion', component: AdministracionUsuarios },
   { path: '/lista-supervisor', component: ListaSupervisor, meta: { requiresAuth: true, rol: 'supervisor' } }, // Nueva ruta para la lista del supervisor
   { path: '/graficos-supervisor', component: GraficosSupervisor, meta: { requiresAuth: true, rol: 'supervisor' } }, // Agregar la ruta para el componente GraficosSupervisor
+  { path: '/reset-requests', component: ResetRequests, meta: { requiresAuth: true, rol: 'supervisor' } },
 ];
 
 const router = createRouter({
