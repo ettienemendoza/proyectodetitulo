@@ -458,10 +458,7 @@ app.put('/api/incidencias/:id', authenticateJWT, async (req, res) => {
     }
 });
 
-// server.js
-// ... (tus imports y modelos)
 
-// ... (tu ruta POST /api/notify-supervisor-reset)
 
 // Ruta para obtener el CONTEO de las solicitudes de restablecimiento (solo para supervisores)
 app.get('/api/reset-requests/count', authenticateJWT, async (req, res) => {
@@ -523,12 +520,12 @@ app.post('/api/notify-supervisor-reset', async (req, res) => {
         const newForgotPasswordRequest = new TipoError({
             tipoerror: 'solicitud_reset_password',
             supervisor_ud: 'pendiente',
-            descripcion: `Usuario/Correo: ${userInfo}`,
+            descripcion: `Usuario/Correo: ${userInfo}`, // <---- Asegúrate de que esto esté así
             createdAt: new Date()
         });
 
         await newForgotPasswordRequest.save();
-        res.status(200).json({ message: 'Se ha registrado tu solicitud. Contacta a tu supervisor.' });
+        res.status(200).json({ message: 'Se ha registrado tu solicitud. Tu supervisor se contactara contigo.' });
 
     } catch (error) {
         // ...

@@ -95,7 +95,7 @@ export default {
 
       try {
         await axios.post('https://proyectodetitulo.onrender.com/api/notify-supervisor-reset', {
-          userInfo: this.resetInfo,
+          userInfo: this.resetInfo, // <---- Asegúrate de que esto esté aquí
         });
         alert('Se ha registrado tu solicitud. Contacta a tu supervisor.');
         this.mostrarOlvidoContrasena = false; // Ocultar el formulario después del envío
@@ -111,7 +111,7 @@ export default {
 </script>
 
 <style scoped>
-/* loginpage.vue */
+
 /* Estilo del formulario de login */
 .login-container {
   background-image: url('@/assets/edificio.jpg');
