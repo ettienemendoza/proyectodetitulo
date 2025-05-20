@@ -1,17 +1,18 @@
 <template>
   <div class="reset-requests-container">
-    <h2>Solicitudes de Restablecimiento de Contraseña</h2>
+    <h2>Solicitudes de Restablecimiento</h2>
+    <button @click="volverAlDashboard" class="back-button">Volver al Dashboard</button>
     <div v-if="resetRequests.length > 0">
       <ul>
-        <li>
-            <strong>Usuario/Correo:</strong> {{ request.descripcion.replace('Usuario/Correo: ', '') }} -
-            <strong>Fecha/Hora:</strong> {{ new Date(request.createdAt).toLocaleString() }}
-            <button @click="marcarComoAtendido(request._id)">Marcar como Atendido</button>
-          </li>
+        <li v-for="request in resetRequests" :key="request._id">
+          <strong>Usuario/Correo:</strong> {{ request.descripcion ? request.descripcion.replace('Usuario/Correo: ', '') : 'No disponible' }} -
+          <strong>Fecha/Hora:</strong> {{ new Date(request.createdAt).toLocaleString() }}
+          <button @click="marcarComoAtendido(request._id)">Marcar como Atendido</button>
+        </li>
       </ul>
     </div>
     <div v-else>
-      <p>No hay solicitudes de restablecimiento de contraseña pendientes.</p>
+      <p>No hay solicitudes de restablecimiento pendientes.</p>
     </div>
   </div>
 </template>
@@ -64,6 +65,9 @@ export default {
         }
       }
     },
+    volverAlDashboard() {
+      this.$router.push('/dashboard-supervisor');
+    },
   },
 };
 </script>
@@ -82,6 +86,21 @@ h2 {
   text-align: center;
   color: #333;
   margin-bottom: 20px;
+}
+
+.back-button {
+  background-color: #5cb85c;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-bottom: 10px;
+}
+
+.back-button:hover {
+  background-color: #4cae4c;
 }
 
 ul {
