@@ -5,9 +5,10 @@
     <div v-if="resetRequests.length > 0">
       <ul>
         <li v-for="request in resetRequests" :key="request._id">
-          <strong>Usuario/Correo:</strong> {{ request.descripcion ? request.descripcion.replace('Usuario/Correo: ', '') : 'No disponible' }} -
+          <strong>Usuario/Correo:</strong>
+          {{ request.descripcion ? request.descripcion.replace('Usuario/Correo: ', '') : (request.username || request.email || 'No disponible') }} -
           <strong>Fecha/Hora:</strong> {{ new Date(request.createdAt).toLocaleString() }}
-          <button @click="marcarComoAtendido(request._id)" class="atendido-button">Marcar como Atendido</button>
+          <button @click="marcarComoAtendido(request._id)" class="mark-attended-button">Marcar como Atendido</button>
         </li>
       </ul>
     </div>
@@ -90,7 +91,7 @@ h2 {
 }
 
 .back-button {
-  background-color: #5cb85c;
+  background-color: #d9534f; /* Rojo - Volver al Menu Principal */
   color: white;
   padding: 8px 12px;
   border: none;
@@ -101,7 +102,7 @@ h2 {
 }
 
 .back-button:hover {
-  background-color: #4cae4c;
+  background-color: #c9302c;
 }
 
 ul {
@@ -121,8 +122,8 @@ li:last-child {
   border-bottom: none;
 }
 
-.atendido-button {
-  background-color: #d9534f; /* Rojo */
+.mark-attended-button {
+  background-color: #007bff; /* Azul - Marcar como Atendido */
   color: white;
   padding: 8px 12px;
   border: none;
@@ -131,7 +132,7 @@ li:last-child {
   font-size: 0.9em;
 }
 
-.atendido-button:hover {
-  background-color: #c9302c;
+.mark-attended-button:hover {
+  background-color: #0056b3;
 }
 </style>
