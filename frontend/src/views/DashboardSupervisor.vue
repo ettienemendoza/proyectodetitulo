@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import axios from 'axios'; // Se mantiene axios por si se usa en otras funciones no mostradas aquí
+
 
 export default {
   data() {
