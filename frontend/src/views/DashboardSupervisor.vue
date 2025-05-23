@@ -13,10 +13,6 @@
         <div class="option-card" @click="irAListaSupervisor">
           <h3>Lista de Incidencias</h3>
         </div>
-        <div class="option-card relative" @click="irAResetRequests">
-          <h3>Solicitudes</h3>
-          <span v-if="resetRequestCount > 0" class="notification-badge">{{ resetRequestCount }}</span>
-        </div>
         <div class="option-card" @click="irAAdministracion">
           <h3>Administración</h3>
         </div>
@@ -30,39 +26,17 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from 'axios'; // Se mantiene axios por si se usa en otras funciones no mostradas aquí
 
 export default {
   data() {
     return {
-      resetRequestCount: 0,
+      // Se eliminó resetRequestCount
     };
   },
-  mounted() {
-    this.obtenerConteoSolicitudes();
-    // Actualizar el conteo periódicamente (opcional)
-    this.interval = setInterval(this.obtenerConteoSolicitudes, 5000);
-  },
-  beforeUnmount() {
-    clearInterval(this.interval); // Limpiar el intervalo al desmontar el componente
-  },
+  // Se eliminaron mounted y beforeUnmount
   methods: {
-    async obtenerConteoSolicitudes() {
-      const token = localStorage.getItem('token');
-      if (token) {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-        try {
-          const response = await axios.get('https://proyectodetitulo.onrender.com/api/reset-requests/count', config);
-          this.resetRequestCount = response.data.count;
-        } catch (error) {
-          console.error('Error al obtener el conteo de solicitudes de reset:', error);
-        }
-      }
-    },
+    // Se eliminó obtenerConteoSolicitudes()
     irAGrafico() {
       this.$router.push('/graficos-supervisor');
     },
@@ -72,9 +46,7 @@ export default {
     irAAdministracion() {
       this.$router.push('/administracion');
     },
-    irAResetRequests() {
-      this.$router.push('/reset-requests');
-    },
+    // Se eliminó irAResetRequests()
     cerrarSesion() {
       localStorage.removeItem('token');
       localStorage.removeItem('rol');
@@ -188,15 +160,4 @@ h3 {
   font-size: 1.2em;
 }
 
-.notification-badge {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  background-color: red;
-  color: white;
-  border-radius: 50%;
-  padding: 5px 8px;
-  font-size: 0.8em;
-  z-index: 2;
-}
 </style>
