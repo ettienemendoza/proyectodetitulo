@@ -95,7 +95,7 @@ export default {
 
       try {
         await axios.post('https://proyectodetitulo.onrender.com/api/notify-supervisor-reset', {
-          userInfo: this.resetInfo, // <---- Asegúrate de que esto esté aquí
+          userInfo: this.resetInfo, 
         });
         alert('Se ha registrado tu solicitud. Contacta a tu supervisor.');
         this.mostrarOlvidoContrasena = false; // Ocultar el formulario después del envío

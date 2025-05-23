@@ -5,8 +5,7 @@
     <div v-if="resetRequests.length > 0">
       <ul>
         <li v-for="request in resetRequests" :key="request._id">
-          <strong>Usuario/Correo:</strong>
-          {{ request.descripcion ? request.descripcion.replace('Usuario/Correo: ', '') : (request.username || request.email || 'No disponible') }} -
+          <strong>Usuario/Correo:</strong> {{ request.descripcion || 'No disponible' }} -
           <strong>Fecha/Hora:</strong> {{ new Date(request.createdAt).toLocaleString() }}
           <button @click="marcarComoAtendido(request._id)" class="mark-attended-button">Marcar como Atendido</button>
         </li>
@@ -19,6 +18,7 @@
 </template>
 
 <script>
+// El script de ResetRequests.vue no necesita cambios por ahora
 import axios from 'axios';
 
 export default {
@@ -42,6 +42,8 @@ export default {
         try {
           const response = await axios.get('https://proyectodetitulo.onrender.com/api/reset-requests', config);
           this.resetRequests = response.data;
+          // Agrega un console.log aquí para ver la estructura exacta que llega:
+          console.log("Datos recibidos para solicitudes:", this.resetRequests);
         } catch (error) {
           console.error('Error al obtener las solicitudes de reset:', error);
           alert('Error al obtener las solicitudes de restablecimiento.');
@@ -75,6 +77,7 @@ export default {
 </script>
 
 <style scoped>
+/* Tu estilo para ResetRequests.vue */
 .reset-requests-container {
   padding: 20px;
   background-color: #f9f9f9;

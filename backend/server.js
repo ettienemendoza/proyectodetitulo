@@ -179,18 +179,29 @@ app.get('/api/incidencias/:id', authenticateJWT, async (req, res) => {
 
 app.put('/api/incidencias/:id', authenticateJWT, async (req, res) => {
     try {
-        const { estado } = req.body;
-        const incidencia = await Incidence.findByIdAndUpdate(
-            req.params.id,
-            { estado, updatedAt: Date.now() },
-            { new: true }
-        );
+        const { type, description, estado } = req.body; // <-- Extrae todos los campos que quieres actualizar
+        const executiveName = req.user.nombre;
+        const incidencia = await Incidence.findById(req.params.id); // Busca la incidencia primero
+
         if (!incidencia) {
             return res.status(404).json({ message: 'Incidencia no encontrada' });
         }
-        res.status(200).json({ message: 'Estado de la incidencia actualizado exitosamente', incidencia });
+
+        // Permitir editar solo al supervisor o al ejecutivo que creó la incidencia
+        if (req.user.rol === 'supervisor' || incidencia.executiveName === executiveName) {
+            // Actualiza los campos directamente en el objeto de la incidencia
+            if (type !== undefined) incidencia.type = type; // Solo actualiza si el valor está presente
+            if (description !== undefined) incidencia.description = description;
+            if (estado !== undefined) incidencia.estado = estado;
+            incidencia.updatedAt = Date.now();
+            await incidencia.save(); // Guarda los cambios
+
+            return res.status(200).json({ message: 'Incidencia actualizada exitosamente', incidencia });
+        } else {
+            return res.status(403).json({ message: 'No tienes permiso para editar esta incidencia' });
+        }
     } catch (error) {
-        res.status(500).json({ message: 'Error al actualizar el estado de la incidencia', error: error.message });
+        res.status(500).json({ message: 'Error al actualizar la incidencia', error: error.message });
     }
 });
 
@@ -515,20 +526,20 @@ app.get('/api/tipos-fallas', authenticateJWT, async (req, res) => {
 //guarda la solicitud de restablecimiento de contraseña
 app.post('/api/notify-supervisor-reset', async (req, res) => {
     const { userInfo } = req.body;
+    console.log('Recibido en /api/notify-supervisor-reset. Body:', req.body); // <-- Agrega este log
+    console.log('Valor de userInfo:', userInfo); // <-- Agrega este log
 
     try {
         const newForgotPasswordRequest = new TipoError({
             tipoerror: 'solicitud_reset_password',
             supervisor_ud: 'pendiente',
-            descripcion: `Usuario/Correo: ${userInfo}`, // <---- Asegúrate de que esto esté así
+            descripcion: `Usuario/Correo: ${userInfo}`, // Este es el valor que debería guardarse
             createdAt: new Date()
         });
-
-        await newForgotPasswordRequest.save();
-        res.status(200).json({ message: 'Se ha registrado tu solicitud. Tu supervisor se contactara contigo.' });
-
+        // ... el resto de la lógica
     } catch (error) {
-        // ...
+        console.error('Error en /api/notify-supervisor-reset:', error); // Asegúrate de tener un log de error aquí
+        res.status(500).json({ message: 'Error al registrar la solicitud de reset.' });
     }
 });
 
